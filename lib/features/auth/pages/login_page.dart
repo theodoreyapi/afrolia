@@ -231,7 +231,7 @@ class _LoginPageState extends State<LoginPage> {
                             onPressed: () {
                               Navigator.of(context).pushReplacement(
                                 MaterialPageRoute(
-                                  builder: (_) => RegisterPage(),
+                                  builder: (_) => ChoiseRegisterPage(),
                                 ),
                               );
                             },

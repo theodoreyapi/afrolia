@@ -160,10 +160,12 @@ class _RendezPageState extends State<RendezPage> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
                                   children: [
                                     Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
                                         Text(
                                           "Amina Diallo",
@@ -185,13 +187,19 @@ class _RendezPageState extends State<RendezPage> {
                                     Container(
                                       padding: EdgeInsets.all(2.w),
                                       decoration: BoxDecoration(
-                                        color: Colors.green.withValues(alpha: .2),
-                                        borderRadius: BorderRadius.circular(10.w),
+                                        color: index != 1
+                                            ? Colors.green.withValues(alpha: .2)
+                                            : Colors.blueAccent.withValues(
+                                                alpha: .2,
+                                              ),
+                                        borderRadius: BorderRadius.circular(
+                                          10.w,
+                                        ),
                                       ),
                                       child: Text(
-                                        "Terminé",
+                                        index != 1 ? "Terminé" : "A venir",
                                         style: TextStyle(
-                                          color: Colors.green,
+                                          color: index != 1 ? Colors.green : Colors.blueAccent,
                                           fontWeight: FontWeight.bold,
                                         ),
                                       ),
@@ -239,7 +247,8 @@ class _RendezPageState extends State<RendezPage> {
                                   ],
                                 ),
                                 Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
                                   children: [
                                     Text.rich(
                                       TextSpan(
@@ -293,22 +302,57 @@ class _RendezPageState extends State<RendezPage> {
                                         text: "#AR001523  ",
                                         style: TextStyle(fontSize: 15.sp),
                                       ),
-                                      TextSpan(
-                                        text: " Réserver à nouveau",
-                                        style: TextStyle(
-                                          fontSize: 15.sp,
-                                          fontWeight: FontWeight.bold,
-                                          color: appColorTextSecond,
+                                      if (index != 1)
+                                        TextSpan(
+                                          text: " Réserver à nouveau",
+                                          style: TextStyle(
+                                            fontSize: 15.sp,
+                                            fontWeight: FontWeight.bold,
+                                            color: appColorTextSecond,
+                                          ),
+                                          recognizer: TapGestureRecognizer()
+                                            ..onTap = () {
+                                              ScaffoldMessenger.of(context).showSnackBar(
+                                                const SnackBar(
+                                                  content: Text("Réserver à nouveau cliqué ✅"),
+                                                ),
+                                              );
+                                            },
+                                        )
+                                      else ...[
+                                        TextSpan(
+                                          text: " Modifier",
+                                          style: TextStyle(
+                                            fontSize: 15.sp,
+                                            fontWeight: FontWeight.bold,
+                                            color: appColorTextSecond,
+                                          ),
+                                          recognizer: TapGestureRecognizer()
+                                            ..onTap = () {
+                                              ScaffoldMessenger.of(context).showSnackBar(
+                                                const SnackBar(
+                                                  content: Text("Modifier cliqué ✅"),
+                                                ),
+                                              );
+                                            },
                                         ),
-                                        recognizer: TapGestureRecognizer()
-                                          ..onTap = () {
-                                            ScaffoldMessenger.of(context).showSnackBar(
-                                              const SnackBar(
-                                                content: Text("Réserver à nouveau cliqué ✅"),
-                                              ),
-                                            );
-                                          },
-                                      ),
+                                        TextSpan(
+                                          text: " Annuler",
+                                          style: TextStyle(
+                                            fontSize: 15.sp,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.red,
+                                          ),
+                                          recognizer: TapGestureRecognizer()
+                                            ..onTap = () {
+                                              ScaffoldMessenger.of(context).showSnackBar(
+                                                const SnackBar(
+                                                  content: Text("Annuler cliqué ❌"),
+                                                ),
+                                              );
+                                            },
+                                        ),
+                                      ],
                                     ],
                                   ),
                                 ),

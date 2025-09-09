@@ -10,13 +10,13 @@ class AppConstants {
   static const btnProceed = "Vérification";
   static const btnContinue = "Continuer";
   static const btnCreate = "Créer mon compte";
-  static const btnCreateEvent = "Créer un évènement";
-  static const btnCreateAdventure = "Lancer l'aventure";
-  static const btnCreateEvenment = "Créer l'évènement";
-  static const btnPayTicket = "Payer le ticket";
   static const btnLogout = "Se déconnecter";
   static const btnCancel = "Annuler";
   static const btnPurchase = "S'abonner";
   static const btnUpdate = "Mettre à jour";
   static const btnNew = "Nouvelle réservation";
+  static const btnProfile = "Voir le profil";
+  static const btnInfo = "Modifier mes informations";
+  static const btnReserver = "Réserver";
+  static const btnReserverM = "Réserver maintenant";
 }
