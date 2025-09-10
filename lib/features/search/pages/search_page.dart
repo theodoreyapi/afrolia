@@ -1,3 +1,4 @@
+import 'package:afrolia/features/search/search.dart';
 import 'package:flutter/material.dart';
 
 import 'package:afrolia/core/themes/themes.dart';
@@ -286,7 +287,9 @@ class _SearchPageState extends State<SearchPage> {
                                             ),
                                           ),
                                           child: Text(
-                                            index != 1 ? "Disponible" : "Occupee",
+                                            index != 1
+                                                ? "Disponible"
+                                                : "Occupee",
                                             textAlign: TextAlign.center,
                                             style: TextStyle(
                                               color: index != 1
@@ -304,7 +307,15 @@ class _SearchPageState extends State<SearchPage> {
                                           fontSize: 13.sp,
                                           AppConstants.btnReserver,
                                           height: 4.h,
-                                          onPressed: () async {},
+                                          onPressed: () async {
+                                            Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (context) =>
+                                                    ReservationPage(),
+                                              ),
+                                            );
+                                          },
                                         ),
                                       ),
                                     ],

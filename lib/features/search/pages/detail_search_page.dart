@@ -1,6 +1,7 @@
 import 'package:afrolia/core/constants/constants.dart';
 import 'package:afrolia/core/themes/themes.dart';
 import 'package:afrolia/core/widgets/widgets.dart';
+import 'package:afrolia/features/search/search.dart';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:sizer/sizer.dart';
@@ -251,7 +252,15 @@ class _DetailSearchPageState extends State<DetailSearchPage>
                           child: SubmitButton(
                             fontSize: 16.sp,
                             AppConstants.btnReserver,
-                            onPressed: () async {},
+                            onPressed: () async {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      ReservationPage(),
+                                ),
+                              );
+                            },
                           ),
                         ),
                       ],
@@ -495,7 +504,15 @@ class _DetailSearchPageState extends State<DetailSearchPage>
             color: appColorWhite,
             size: 18.sp,
           ),
-          onPressed: () async {},
+          onPressed: () async {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) =>
+                    ReservationPage(),
+              ),
+            );
+          },
         ),
       ),
     );
