@@ -137,6 +137,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.9.3+4"
+  fl_chart:
+    dependency: "direct main"
+    description:
+      name: fl_chart
+      sha256: d3f82f4a38e33ba23d05a08ff304d7d8b22d2a59a5503f20bd802966e915db89
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.1.0"
   flutter:
     dependency: "direct main"
     description: flutter
@@ -527,6 +535,14 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
+  smart_hbar_chart:
+    dependency: "direct main"
+    description:
+      name: smart_hbar_chart
+      sha256: c1fe274f8172565f0a2f5098621ebee9fbc5ec3c2afc4729a7d03669081cfe38
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.4"
   source_span:
     dependency: transitive
     description:

@@ -1,6 +1,4 @@
-import 'package:afrolia/core/constants/constants.dart';
 import 'package:afrolia/core/themes/themes.dart';
-import 'package:afrolia/core/widgets/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:sizer/sizer.dart';

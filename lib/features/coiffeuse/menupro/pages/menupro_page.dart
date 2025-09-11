@@ -1,29 +1,29 @@
-import 'package:afrolia/features/coiffeuse/menupro/pages/pages.dart';
+import 'package:afrolia/core/constants/constants.dart';
+import 'package:afrolia/core/themes/themes.dart';
+import 'package:afrolia/features/coiffeuse/apercu/apercu.dart';
+import 'package:afrolia/features/coiffeuse/reservation/reservation.dart';
+import 'package:afrolia/features/coiffeuse/revenu/revenu.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:sizer/sizer.dart';
 
-import '../../../core/constants/constants.dart';
-import '../../../core/themes/themes.dart';
-import '../../favorite/favorite.dart';
-import '../../profile/profile.dart';
-import '../../rendez/rendez.dart';
-import '../../search/search.dart';
+import '../../../menu/pages/menu_page.dart';
+import '../../profilpro/profilepro.dart';
 
-class MenuPage extends StatefulWidget {
-  const MenuPage({super.key});
+class MenuproPage extends StatefulWidget {
+  const MenuproPage({super.key});
 
   @override
-  State<MenuPage> createState() => _MenuPageState();
+  State<MenuproPage> createState() => _MenuproPageState();
 }
 
-class _MenuPageState extends State<MenuPage> {
+class _MenuproPageState extends State<MenuproPage> {
   int currentPageIndex = 0;
 
-  final Widget _home = RendezPage();
-  final Widget _invite = SearchPage();
-  final Widget _chat = FavoritePage();
-  final Widget _profile = ProfilePage();
+  final Widget _home = ApercuPage();
+  final Widget _invite = ReservationPage();
+  final Widget _chat = RevenuPage();
+  final Widget _profile = ProfilproPage();
 
   @override
   Widget build(BuildContext context) {
@@ -49,7 +49,7 @@ class _MenuPageState extends State<MenuPage> {
           InkWell(
             onTap: () {
               Navigator.of(context).pushAndRemoveUntil(
-                MaterialPageRoute(builder: (context) => MenuproPage()),
+                MaterialPageRoute(builder: (context) => MenuPage()),
                     (route) => false,
               );
             },
@@ -81,9 +81,9 @@ class _MenuPageState extends State<MenuPage> {
           });
         },
         destinations: [
-          _buildNavItem(Icons.home_outlined, "Rendez-vous", 0),
-          _buildNavItem(Icons.search_outlined, "Recherche", 1),
-          _buildNavItem(Icons.favorite_outline, "Favorites", 2),
+          _buildNavItem(Icons.dashboard_outlined, "Aperçu", 0),
+          _buildNavItem(Icons.event_available_outlined, "Réservations", 1),
+          _buildNavItem(Icons.monetization_on_outlined, "Revenus", 2),
           _buildNavItem(Icons.person_outline, "Profil", 3),
         ],
       ),

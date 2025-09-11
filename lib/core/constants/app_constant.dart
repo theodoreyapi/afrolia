@@ -17,6 +17,7 @@ class AppConstants {
   static const btnNew = "Nouvelle réservation";
   static const btnProfile = "Voir le profil";
   static const btnInfo = "Modifier mes informations";
+  static const btnEditInfo = "Modifier mon profil";
   static const btnReserver = "Réserver";
   static const btnReserverM = "Réserver maintenant";
 }
