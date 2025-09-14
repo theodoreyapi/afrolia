@@ -1,1 +1,10 @@
 export 'profilpro_page.dart';
+export 'disponible_page.dart';
+export 'gallery_page.dart';
+export 'help_page.dart';
+export 'info_pro_page.dart';
+export 'payment_page.dart';
+export 'reseau_page.dart';
+export 'security_page.dart';
+export 'service_page.dart';
+export 'tarif_page.dart';

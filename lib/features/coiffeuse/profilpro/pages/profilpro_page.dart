@@ -1,6 +1,7 @@
 import 'package:afrolia/core/constants/constants.dart';
 import 'package:afrolia/core/themes/themes.dart';
 import 'package:afrolia/core/widgets/widgets.dart';
+import 'package:afrolia/features/coiffeuse/profilpro/profilepro.dart';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:sizer/sizer.dart';
@@ -85,18 +86,6 @@ class _ProfilproPageState extends State<ProfilproPage> {
                                 fontWeight: FontWeight.normal,
                               ),
                             ),
-                            Gap(1.h),
-                            GestureDetector(
-                              onTap: () {},
-                              child: Text(
-                                "Modifier la photo",
-                                style: TextStyle(
-                                  color: appColorTextSecond,
-                                  fontSize: 15.sp,
-                                  fontWeight: FontWeight.normal,
-                                ),
-                              ),
-                            ),
                           ],
                         ),
                       ),
@@ -119,7 +108,7 @@ class _ProfilproPageState extends State<ProfilproPage> {
                             ),
                           ),
                           Text(
-                            "Clientes",
+                            "Clients",
                             style: TextStyle(
                               fontSize: 15.sp,
                               fontWeight: FontWeight.normal,
@@ -180,7 +169,12 @@ class _ProfilproPageState extends State<ProfilproPage> {
                   SubmitButton(
                     fontSize: 16.sp,
                     AppConstants.btnEditInfo,
-                    onPressed: () async {},
+                    onPressed: () async {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => InfoProPage()),
+                      );
+                    },
                   ),
                 ],
               ),
@@ -194,7 +188,12 @@ class _ProfilproPageState extends State<ProfilproPage> {
                 borderRadius: BorderRadius.circular(3.w),
               ),
               child: ListTile(
-                onTap: () {},
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => DisponiblePage()),
+                  );
+                },
                 leading: Container(
                   padding: EdgeInsets.all(3.w),
                   decoration: BoxDecoration(
@@ -229,17 +228,19 @@ class _ProfilproPageState extends State<ProfilproPage> {
                 borderRadius: BorderRadius.circular(3.w),
               ),
               child: ListTile(
-                onTap: () {},
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => TarifPage()),
+                  );
+                },
                 leading: Container(
                   padding: EdgeInsets.all(3.w),
                   decoration: BoxDecoration(
                     color: appColorBorder,
                     borderRadius: BorderRadius.circular(3.w),
                   ),
-                  child: Icon(
-                    Icons.sell_outlined,
-                    color: appColorTextSecond,
-                  ),
+                  child: Icon(Icons.sell_outlined, color: appColorTextSecond),
                 ),
                 title: Text(
                   "Mes tarifs et services",
@@ -264,7 +265,52 @@ class _ProfilproPageState extends State<ProfilproPage> {
                 borderRadius: BorderRadius.circular(3.w),
               ),
               child: ListTile(
-                onTap: () {},
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => ReseauPage()),
+                  );
+                },
+                leading: Container(
+                  padding: EdgeInsets.all(3.w),
+                  decoration: BoxDecoration(
+                    color: appColorBorder,
+                    borderRadius: BorderRadius.circular(3.w),
+                  ),
+                  child: Icon(
+                    Icons.connect_without_contact_outlined,
+                    color: appColorTextSecond,
+                  ),
+                ),
+                title: Text(
+                  "Réseaux sociaux",
+                  style: TextStyle(
+                    color: appColorText,
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                trailing: Icon(
+                  Icons.arrow_forward_outlined,
+                  color: appColorTextSecond,
+                  size: 16.sp,
+                ),
+              ),
+            ),
+            Container(
+              margin: EdgeInsets.only(bottom: 2.w),
+              padding: EdgeInsets.all(3.w),
+              decoration: BoxDecoration(
+                color: appColorWhite,
+                borderRadius: BorderRadius.circular(3.w),
+              ),
+              child: ListTile(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => PaymentPage()),
+                  );
+                },
                 leading: Container(
                   padding: EdgeInsets.all(3.w),
                   decoration: BoxDecoration(
@@ -299,17 +345,19 @@ class _ProfilproPageState extends State<ProfilproPage> {
                 borderRadius: BorderRadius.circular(3.w),
               ),
               child: ListTile(
-                onTap: () {},
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => GalleryPage()),
+                  );
+                },
                 leading: Container(
                   padding: EdgeInsets.all(3.w),
                   decoration: BoxDecoration(
                     color: appColorBorder,
                     borderRadius: BorderRadius.circular(3.w),
                   ),
-                  child: Icon(
-                    Icons.image_outlined,
-                    color: appColorTextSecond,
-                  ),
+                  child: Icon(Icons.image_outlined, color: appColorTextSecond),
                 ),
                 title: Text(
                   "Ma galerie photos",
@@ -334,7 +382,12 @@ class _ProfilproPageState extends State<ProfilproPage> {
                 borderRadius: BorderRadius.circular(3.w),
               ),
               child: ListTile(
-                onTap: () {},
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => HelpPage()),
+                  );
+                },
                 leading: Container(
                   padding: EdgeInsets.all(3.w),
                   decoration: BoxDecoration(
@@ -369,7 +422,12 @@ class _ProfilproPageState extends State<ProfilproPage> {
                 borderRadius: BorderRadius.circular(3.w),
               ),
               child: ListTile(
-                onTap: () {},
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => SecurityPage()),
+                  );
+                },
                 leading: Container(
                   padding: EdgeInsets.all(3.w),
                   decoration: BoxDecoration(

@@ -4,16 +4,18 @@ import 'input_text.dart';
 
 class InputPassword extends StatefulWidget {
   final TextEditingController controller;
-  final String validatorMessage;
+  final String? validatorMessage;
   final String? hintText;
   final Widget? prefixIcon;
+  final Color? colorFille;
 
   const InputPassword({
     super.key,
     required this.controller,
-    required this.validatorMessage,
+    this.validatorMessage,
     this.hintText,
     this.prefixIcon,
+    this.colorFille,
     required IconButton suffixIcon,
   });
 
@@ -42,6 +44,7 @@ class _InputPasswordState extends State<InputPassword> {
           );
         },
       ),
+      colorFille: widget.colorFille,
     );
   }
 }

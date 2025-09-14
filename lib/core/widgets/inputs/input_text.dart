@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:sizer/sizer.dart';
 
 import '../../themes/themes.dart';
@@ -8,21 +9,25 @@ class InputText extends StatefulWidget {
   final TextInputType? keyboardType;
   final String? hintText;
   final String? validatorMessage;
+  final ValueChanged<String>? onChanged;
   final Widget? prefixIcon;
   final Widget? suffixIcon;
   final int? maxLines;
   final int? maxLength;
+  final MaxLengthEnforcement? maxLengthEnforcement;
   final bool obscureText;
   final Color? colorFille;
   final List? inputFormatters;
   final bool isClickable;
   final VoidCallback? onTap;
   final Color? borderColor;
+  final String? conterText;
 
   const InputText({
     super.key,
     required this.controller,
     this.validatorMessage,
+    this.onChanged,
     this.keyboardType,
     this.hintText,
     this.prefixIcon,
@@ -31,10 +36,12 @@ class InputText extends StatefulWidget {
     this.isClickable = false,
     this.maxLines,
     this.maxLength,
+    this.maxLengthEnforcement,
     this.inputFormatters,
     this.colorFille,
     this.onTap,
     this.borderColor,
+    this.conterText,
   });
 
   @override
@@ -89,8 +96,12 @@ class _InputTextState extends State<InputText> {
           hintText: widget.hintText,
           prefixIcon: widget.prefixIcon,
           suffixIcon: widget.suffixIcon,
+          counterText: widget.conterText ?? "",
         ),
         maxLines: widget.maxLines ?? 1,
+        maxLength: widget.maxLength ?? 1,
+        maxLengthEnforcement:
+            widget.maxLengthEnforcement ?? MaxLengthEnforcement.none,
         validator: (value) {
           if (value!.isEmpty) {
             return widget.validatorMessage;
@@ -98,6 +109,7 @@ class _InputTextState extends State<InputText> {
             return null;
           }
         },
+        onChanged:  widget.onChanged,
       ),
     );
   }

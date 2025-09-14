@@ -20,4 +20,5 @@ class AppConstants {
   static const btnEditInfo = "Modifier mon profil";
   static const btnReserver = "Réserver";
   static const btnReserverM = "Réserver maintenant";
+  static const btnAdd = "Ajouter";
 }
