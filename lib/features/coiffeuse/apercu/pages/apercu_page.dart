@@ -214,7 +214,7 @@ class _ApercuPageState extends State<ApercuPage> {
                             ),
                             Gap(.5.h),
                             Text(
-                              "Réservations",
+                              "Revenus aujourdhui",
                               style: TextStyle(
                                 color: appColorBlack,
                                 fontSize: 15.sp,
