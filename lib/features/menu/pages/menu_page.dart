@@ -5,6 +5,7 @@ import 'package:sizer/sizer.dart';
 
 import '../../../core/constants/constants.dart';
 import '../../../core/themes/themes.dart';
+import '../../../core/utils/sessions.dart';
 import '../../favorite/favorite.dart';
 import '../../profile/profile.dart';
 import '../../rendez/rendez.dart';
@@ -31,7 +32,11 @@ class _MenuPageState extends State<MenuPage> {
       appBar: AppBar(
         leading: Padding(
           padding: EdgeInsets.all(1.w),
-          child: ClipOval(child: Image.asset("assets/images/gal1.jpg")),
+          child: ClipOval(
+            child: SharedPreferencesHelper().getString('photo') == ""
+                ? Image.asset("assets/images/logo.png")
+                : Image.network(SharedPreferencesHelper().getString('photo')!),
+          ),
         ),
         backgroundColor: appColorWhite,
         elevation: 0.5,
@@ -50,13 +55,16 @@ class _MenuPageState extends State<MenuPage> {
             onTap: () {
               Navigator.of(context).pushAndRemoveUntil(
                 MaterialPageRoute(builder: (context) => MenuproPage()),
-                    (route) => false,
+                (route) => false,
               );
             },
             child: Padding(
               padding: EdgeInsets.all(1.w),
               child: CircleAvatar(
-                child: Icon(Icons.flip_camera_android_outlined, color: appColorText),
+                child: Icon(
+                  Icons.flip_camera_android_outlined,
+                  color: appColorText,
+                ),
               ),
             ),
           ),

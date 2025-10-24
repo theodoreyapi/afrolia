@@ -1,5 +1,10 @@
+import 'dart:convert';
+import 'dart:io';
+
+import 'package:afrolia/features/coiffeuse/menupro/pages/menupro_page.dart';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
+import 'package:http/http.dart' as http;
 import 'package:intl_phone_number_input/intl_phone_number_input.dart';
 import 'package:sizer/sizer.dart';
 
@@ -101,7 +106,7 @@ class _LoginPageState extends State<LoginPage> {
                             child: Padding(
                               padding: EdgeInsets.all(3.w),
                               child: Image.asset(
-                                "assets/images/splash.jpg",
+                                "assets/images/logo-remove.png",
                                 fit: BoxFit.cover,
                               ),
                             ),
@@ -213,10 +218,7 @@ class _LoginPageState extends State<LoginPage> {
                           AppConstants.btnLogin,
                           onPressed: () async {
                             if (_formKey.currentState!.validate()) {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(builder: (_) => MenuPage()),
-                              );
+                              loginUser(context);
                             } else {
                               SnackbarHelper.showError(
                                 context,
@@ -255,5 +257,143 @@ class _LoginPageState extends State<LoginPage> {
         ),
       ),
     );
+  }
+
+  Future<void> loginUser(BuildContext context) async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: appColor,
+          surfaceTintColor: appColor,
+          shadowColor: appColor,
+          content: Row(
+            children: [
+              CircularProgressIndicator(color: appColorWhite),
+              const SizedBox(width: 20),
+              Expanded(
+                child: Text(
+                  'Authentification...',
+                  style: TextStyle(color: appColorWhite),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+
+    try {
+      // Autoriser les certificats auto-signés (attention en production)
+      HttpClient().badCertificateCallback =
+          (X509Certificate cert, String host, int port) => true;
+
+      final response = await http.post(
+        Uri.parse(ApiUrls.postLogin),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'login': phoneIndicator.isEmpty ? login.text : phoneIndicator,
+          'password': password.text,
+        }),
+      );
+      final Map<String, dynamic> responseData = jsonDecode(
+        utf8.decode(response.bodyBytes),
+      );
+
+      if (response.statusCode == 200) {
+        // Sauvegarder toutes les infos utilisateur
+        await Future.wait([
+          SharedPreferencesHelper().saveString(
+            'identifiant',
+            responseData['data']['id'].toString(),
+          ),
+          SharedPreferencesHelper().saveString(
+            'presentation',
+            responseData['data']['presentation'],
+          ),
+          SharedPreferencesHelper().saveString(
+            'email',
+            responseData['data']['email'],
+          ),
+          SharedPreferencesHelper().saveString(
+            'nom',
+            responseData['data']['nom'],
+          ),
+          SharedPreferencesHelper().saveString(
+            'prenom',
+            responseData['data']['prenom'],
+          ),
+          SharedPreferencesHelper().saveString(
+            'phone',
+            responseData['data']['phone'],
+          ),
+          SharedPreferencesHelper().saveString(
+            'adresse',
+            responseData['data']['adresse'],
+          ),
+          SharedPreferencesHelper().saveInteger(
+            'experience',
+            responseData['data']['experience'],
+          ),
+          SharedPreferencesHelper().saveString(
+            'commune',
+            responseData['data']['commune'],
+          ),
+          SharedPreferencesHelper().saveString(
+            'role',
+            responseData['data']['role'],
+          ),
+          SharedPreferencesHelper().saveString(
+            'photo',
+            responseData['data']['photo'],
+          ),
+          SharedPreferencesHelper().saveString(
+            'creation',
+            responseData['data']['creation'],
+          ),
+        ]);
+
+        Navigator.pop(context);
+
+        SnackbarHelper.showSuccess(context, responseData['message']);
+
+        if (responseData['data']['role'] == 'user') {
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (context) => const MenuPage()),
+            (route) => false,
+          );
+        } else {
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (context) => const MenuproPage()),
+            (route) => false,
+          );
+        }
+      } else if (response.statusCode == 401) {
+        Navigator.pop(context);
+        SnackbarHelper.showWarning(context, responseData['message']);
+      } else if (response.statusCode == 422) {
+        Navigator.pop(context);
+        final message = responseData['message'];
+        if (message is List && message.isNotEmpty) {
+          SnackbarHelper.showError(context, message.first);
+        } else if (message is String) {
+          SnackbarHelper.showError(context, message);
+        } else {
+          SnackbarHelper.showError(context, "Une erreur est survenue.");
+        }
+      } else {
+        Navigator.pop(context);
+        SnackbarHelper.showError(
+          context,
+          "Impossible de se connecter. Veuillez réessayer!",
+        );
+      }
+    } catch (e) {
+      Navigator.pop(context);
+      SnackbarHelper.showError(context, "Erreur de connexion");
+    }
   }
 }

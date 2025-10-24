@@ -11,9 +11,13 @@ class AppConstants {
   static const btnContinue = "Continuer";
   static const btnCreate = "Créer mon compte";
   static const btnLogout = "Se déconnecter";
+  static const btnDelete = "Oui, Supprimer";
   static const btnCancel = "Annuler";
   static const btnPurchase = "S'abonner";
   static const btnUpdate = "Mettre à jour";
+  static const btnCreateService = "Créer un service";
+  static const btnAddGallery = "Ajouter des photos";
+  static const btnAddGal = "Ajouter";
   static const btnNew = "Nouvelle réservation";
   static const btnProfile = "Voir le profil";
   static const btnInfo = "Modifier mes informations";

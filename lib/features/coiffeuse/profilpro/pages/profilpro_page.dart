@@ -4,7 +4,14 @@ import 'package:afrolia/core/widgets/widgets.dart';
 import 'package:afrolia/features/coiffeuse/profilpro/profilepro.dart';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/date_symbol_data_local.dart';
+import 'package:intl/intl.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:sizer/sizer.dart';
+
+import '../../../../core/utils/sessions.dart';
+import '../../../auth/pages/login_page.dart';
 
 class ProfilproPage extends StatefulWidget {
   const ProfilproPage({super.key});
@@ -14,6 +21,32 @@ class ProfilproPage extends StatefulWidget {
 }
 
 class _ProfilproPageState extends State<ProfilproPage> {
+  String? formattedDate;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadDate();
+  }
+
+  Future<void> _loadDate() async {
+    await initializeDateFormatting('fr_FR');
+
+    final creationString = SharedPreferencesHelper().getString('creation');
+    if (creationString != null) {
+      final dateReserve = DateTime.parse(creationString);
+
+      final formatted = DateFormat(
+        "MMMM yyyy",
+        'fr_FR',
+      ).format(dateReserve);
+
+      setState(() {
+        formattedDate = formatted[0].toUpperCase() + formatted.substring(1);
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -42,10 +75,15 @@ class _ProfilproPageState extends State<ProfilproPage> {
                     children: [
                       ClipRRect(
                         borderRadius: BorderRadius.circular(3.w),
-                        child: Image.asset(
-                          "assets/images/gal2.jpg",
-                          height: 10.h,
-                        ),
+                        child:
+                            SharedPreferencesHelper().getString('photo') == ""
+                            ? Image.asset(
+                                "assets/images/logo.png",
+                                height: 10.h,
+                              )
+                            : Image.network(
+                                SharedPreferencesHelper().getString('photo')!,
+                              ),
                       ),
                       Gap(2.w),
                       Expanded(
@@ -53,7 +91,8 @@ class _ProfilproPageState extends State<ProfilproPage> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              "Amina Diallo",
+                              "${SharedPreferencesHelper().getString('nom')!} "
+                              "${SharedPreferencesHelper().getString('prenom')!}",
                               style: TextStyle(
                                 color: appColorText,
                                 fontSize: 17.sp,
@@ -79,7 +118,7 @@ class _ProfilproPageState extends State<ProfilproPage> {
                             ),
                             Gap(1.h),
                             Text(
-                              "Membre depuis Septembre 2025",
+                              "Membre depuis $formattedDate",
                               style: TextStyle(
                                 color: appColorTextSecond,
                                 fontSize: 15.sp,
@@ -462,7 +501,92 @@ class _ProfilproPageState extends State<ProfilproPage> {
                 borderRadius: BorderRadius.circular(3.w),
               ),
               child: ListTile(
-                onTap: () {},
+                onTap: () {
+                  showModalBottomSheet<void>(
+                    context: context,
+                    backgroundColor: appColorWhite,
+                    builder: (BuildContext context) {
+                      return SizedBox(
+                        height: 300,
+                        child: Padding(
+                          padding: EdgeInsets.all(4.w),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            mainAxisSize: MainAxisSize.min,
+                            children: <Widget>[
+                              Text(
+                                "Voulez-vous vraiment vous déconnecter ?",
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  color: appColorBlack,
+                                  fontSize: 18.sp,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              Gap(2.h),
+                              Container(
+                                padding: EdgeInsets.all(2.w),
+                                decoration: BoxDecoration(
+                                  color: appColor.withValues(alpha: .1),
+                                  borderRadius: BorderRadius.circular(3.w),
+                                ),
+                                child: ListTile(
+                                  leading: Icon(
+                                    Icons.info_outline,
+                                    color: appColor,
+                                  ),
+                                  title: Text(
+                                    "Cette action vous empêchera d'avoir "
+                                    "accès a toutes les informations "
+                                    "sur l'application",
+                                    style: TextStyle(
+                                      color: appColor,
+                                      fontSize: 16.sp,
+                                      fontWeight: FontWeight.normal,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              Gap(2.h),
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: CancelButton(
+                                      AppConstants.btnCancel,
+                                      height: 10.w,
+                                      fontSize: 15.sp,
+                                      onPressed: () => Navigator.pop(context),
+                                    ),
+                                  ),
+                                  Gap(2.w),
+                                  Expanded(
+                                    child: SubmitButton(
+                                      AppConstants.btnLogout,
+                                      height: 10.w,
+                                      fontSize: 15.sp,
+                                      couleur: Colors.red,
+                                      onPressed: () async {
+                                        await SharedPreferencesHelper().clear();
+                                        Navigator.pushAndRemoveUntil(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) =>
+                                                const LoginPage(),
+                                          ),
+                                          (route) => false,
+                                        );
+                                      },
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  );
+                },
                 leading: Container(
                   padding: EdgeInsets.all(3.w),
                   decoration: BoxDecoration(
@@ -484,6 +608,138 @@ class _ProfilproPageState extends State<ProfilproPage> {
                   color: Colors.red,
                   size: 16.sp,
                 ),
+              ),
+            ),
+            Gap(2.h),
+            Container(
+              color: Colors.grey[200],
+              width: MediaQuery.of(context).size.width,
+              padding: EdgeInsets.all(2.h),
+              child: FutureBuilder(
+                future: PackageInfo.fromPlatform(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.done &&
+                      snapshot.hasData) {
+                    final info = snapshot.data as PackageInfo;
+                    return Row(
+                      children: [
+                        Column(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              info.appName,
+                              style: GoogleFonts.pacifico(
+                                color: appColorText,
+                                fontSize: 18.sp,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 1,
+                              ),
+                            ),
+                            Text(
+                              'Version: ${info.version}',
+                              style: TextStyle(
+                                color: appColorBlack,
+                                fontWeight: FontWeight.normal,
+                                fontSize: 14.sp,
+                              ),
+                            ),
+                          ],
+                        ),
+                        Spacer(),
+                        IconButton(
+                          onPressed: () {
+                            showModalBottomSheet<void>(
+                              context: context,
+                              backgroundColor: appColorWhite,
+                              builder: (BuildContext context) {
+                                return SizedBox(
+                                  height: 300,
+                                  child: Padding(
+                                    padding: EdgeInsets.all(4.w),
+                                    child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: <Widget>[
+                                        Text(
+                                          "Suppression de compte ?",
+                                          textAlign: TextAlign.center,
+                                          style: TextStyle(
+                                            color: appColorBlack,
+                                            fontSize: 18.sp,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                        Gap(2.h),
+                                        Container(
+                                          padding: EdgeInsets.all(2.w),
+                                          decoration: BoxDecoration(
+                                            color: appColor.withValues(
+                                              alpha: .1,
+                                            ),
+                                            borderRadius: BorderRadius.circular(
+                                              3.w,
+                                            ),
+                                          ),
+                                          child: ListTile(
+                                            leading: Icon(
+                                              Icons.info_outline,
+                                              color: appColor,
+                                            ),
+                                            title: Text(
+                                              "Cette action vous empêchera d'avoir "
+                                              "accès a toutes les informations "
+                                              "sur l'application",
+                                              style: TextStyle(
+                                                color: appColor,
+                                                fontSize: 16.sp,
+                                                fontWeight: FontWeight.normal,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                        Gap(2.h),
+                                        Row(
+                                          children: [
+                                            Expanded(
+                                              child: CancelButton(
+                                                AppConstants.btnCancel,
+                                                height: 10.w,
+                                                fontSize: 15.sp,
+                                                onPressed: () =>
+                                                    Navigator.pop(context),
+                                              ),
+                                            ),
+                                            Gap(2.w),
+                                            Expanded(
+                                              child: SubmitButton(
+                                                AppConstants.btnDelete,
+                                                height: 10.w,
+                                                fontSize: 15.sp,
+                                                couleur: Colors.red,
+                                                onPressed: () async {},
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              },
+                            );
+                          },
+                          icon: Icon(
+                            Icons.delete_forever_outlined,
+                            color: Colors.red,
+                          ),
+                        ),
+                      ],
+                    );
+                  }
+                  return CircularProgressIndicator();
+                },
               ),
             ),
           ],

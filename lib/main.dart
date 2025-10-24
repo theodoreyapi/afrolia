@@ -4,9 +4,14 @@ import 'package:sizer/sizer.dart';
 
 import 'core/constants/constants.dart';
 import 'core/themes/themes.dart';
+import 'core/utils/sessions.dart';
 import 'features/splash/splash.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await SharedPreferencesHelper().init();
+
   runApp(const MyApp());
 }
 
@@ -15,17 +20,19 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Sizer(builder: (context, orientation, deviceType) {
-      return MaterialApp(
-        title: AppConstants.appName,
-        debugShowCheckedModeBanner: false,
-        theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: appColor),
-          textTheme: GoogleFonts.ptSerifTextTheme(),
-          useMaterial3: true,
-        ),
-        home: SplashPage(),
-      );
-    });
+    return Sizer(
+      builder: (context, orientation, deviceType) {
+        return MaterialApp(
+          title: AppConstants.appName,
+          debugShowCheckedModeBanner: false,
+          theme: ThemeData(
+            colorScheme: ColorScheme.fromSeed(seedColor: appColor),
+            textTheme: GoogleFonts.ptSerifTextTheme(),
+            useMaterial3: true,
+          ),
+          home: SplashPage(),
+        );
+      },
+    );
   }
 }

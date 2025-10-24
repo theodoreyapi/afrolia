@@ -144,7 +144,7 @@ class _IntroPageState extends State<IntroPage> {
                     child: Padding(
                       padding: EdgeInsets.all(3.w),
                       child: Image.asset(
-                        "assets/images/splash.jpg",
+                        "assets/images/logo-remove.png",
                         fit: BoxFit.cover,
                       ),
                     ),

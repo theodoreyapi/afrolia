@@ -75,7 +75,7 @@ class _ChoiseRegisterPageState extends State<ChoiseRegisterPage> {
                     ).push(MaterialPageRoute(builder: (_) => RegisterPage(texte: "Cliente")));
                   },
                   title: Text(
-                    "Cliente",
+                    "Client(e)",
                     style: TextStyle(
                       color: appColorText,
                       fontSize: 18.sp,

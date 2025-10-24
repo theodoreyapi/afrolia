@@ -1,3 +1,4 @@
+import 'package:afrolia/features/coiffeuse/menupro/pages/menupro_page.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:sizer/sizer.dart';
@@ -39,11 +40,18 @@ class _SplashPageState extends State<SplashPage> {
   }
 
   Future<void> _navigateToNextScreen() async {
-    String? nom = SharedPreferencesHelper().getString('nom');
-    if (nom != null) {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (context) => const MenuPage()),
-      );
+    String? role = SharedPreferencesHelper().getString('role');
+    print(role);
+    if (role != null) {
+      if (role == 'hair') {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => const MenuproPage()),
+        );
+      } else {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => const MenuPage()),
+        );
+      }
     } else {
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (context) => const IntroPage()),

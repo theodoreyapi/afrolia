@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:sizer/sizer.dart';
 
+import '../../../../core/utils/sessions.dart';
 import '../../../menu/pages/menu_page.dart';
 import '../../profilpro/profilepro.dart';
 
@@ -31,7 +32,11 @@ class _MenuproPageState extends State<MenuproPage> {
       appBar: AppBar(
         leading: Padding(
           padding: EdgeInsets.all(1.w),
-          child: ClipOval(child: Image.asset("assets/images/gal1.jpg")),
+          child: ClipOval(
+            child: SharedPreferencesHelper().getString('photo') == ""
+                ? Image.asset("assets/images/logo.png")
+                : Image.network(SharedPreferencesHelper().getString('photo')!),
+          ),
         ),
         backgroundColor: appColorWhite,
         elevation: 0.5,

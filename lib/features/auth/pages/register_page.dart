@@ -1,10 +1,14 @@
+import 'dart:convert';
 import 'dart:io';
 
+import 'package:afrolia/features/security/security.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
+import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'package:intl_phone_number_input/intl_phone_number_input.dart';
+import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:sizer/sizer.dart';
 
 import '../../../core/constants/constants.dart';
@@ -16,6 +20,7 @@ import '../auth.dart';
 
 class RegisterPage extends StatefulWidget {
   String? texte;
+
   RegisterPage({super.key, this.texte});
 
   @override
@@ -58,19 +63,6 @@ class _RegisterPageState extends State<RegisterPage> {
   String phoneIndicator = "";
   String initialCountry = 'CI';
   PhoneNumber number = PhoneNumber(isoCode: 'CI');
-
-  File? _image;
-
-  Future<void> _pickImage() async {
-    final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
-
-    if (pickedFile != null) {
-      setState(() {
-        _image = File(pickedFile.path);
-      });
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -177,7 +169,6 @@ class _RegisterPageState extends State<RegisterPage> {
                           hintText: "Email",
                           keyboardType: TextInputType.emailAddress,
                           controller: email,
-                          validatorMessage: "Veuillez saisir votre adresse email",
                         ),
                         Gap(1.h),
                         Container(
@@ -186,7 +177,9 @@ class _RegisterPageState extends State<RegisterPage> {
                             color: appColorWhite,
                             borderRadius: BorderRadius.circular(3.w),
                             border: Border.all(
-                              color: _isFocused ? appColorBorder : Colors.transparent,
+                              color: _isFocused
+                                  ? appColorBorder
+                                  : Colors.transparent,
                               width: 2,
                             ),
                           ),
@@ -203,7 +196,9 @@ class _RegisterPageState extends State<RegisterPage> {
                             ),
                             ignoreBlank: false,
                             autoValidateMode: AutovalidateMode.disabled,
-                            selectorTextStyle: const TextStyle(color: Colors.black),
+                            selectorTextStyle: const TextStyle(
+                              color: Colors.black,
+                            ),
                             //countries: ['CI'],
                             initialValue: number,
                             textFieldController: login,
@@ -222,10 +217,13 @@ class _RegisterPageState extends State<RegisterPage> {
                         InputPassword(
                           hintText: "Mot de passe",
                           controller: password,
-                          validatorMessage: "Veuillez saisir votre mot de passe",
+                          validatorMessage:
+                              "Veuillez saisir votre mot de passe",
                           suffixIcon: IconButton(
                             icon: Icon(
-                              _obscure ? Icons.visibility_off : Icons.visibility,
+                              _obscure
+                                  ? Icons.visibility_off
+                                  : Icons.visibility,
                               color: appColor,
                             ),
                             onPressed: () {
@@ -238,11 +236,14 @@ class _RegisterPageState extends State<RegisterPage> {
                         Gap(1.h),
                         InputPassword(
                           hintText: "Confimer le mot de passe",
-                          controller: password,
-                          validatorMessage: "Veuillez saisir votre mot de passe",
+                          controller: confirmPassword,
+                          validatorMessage:
+                              "Veuillez saisir votre mot de passe",
                           suffixIcon: IconButton(
                             icon: Icon(
-                              _obscure ? Icons.visibility_off : Icons.visibility,
+                              _obscure
+                                  ? Icons.visibility_off
+                                  : Icons.visibility,
                               color: appColor,
                             ),
                             onPressed: () {
@@ -256,8 +257,15 @@ class _RegisterPageState extends State<RegisterPage> {
                         SubmitButton(
                           AppConstants.btnCreate,
                           onPressed: () {
-                            if (_formKey.currentState!.validate() && _image != null) {
-
+                            if (_formKey.currentState!.validate()) {
+                              if (password.text == confirmPassword.text) {
+                                registerUser(context);
+                              } else {
+                                SnackbarHelper.showError(
+                                  context,
+                                  "Les mots de passe ne correspondent pas",
+                                );
+                              }
                             } else {
                               SnackbarHelper.showError(
                                 context,
@@ -286,7 +294,9 @@ class _RegisterPageState extends State<RegisterPage> {
                                   ),
                                   children: [
                                     const TextSpan(
-                                        text: "En vous inscrivant, vous acceptez nos "),
+                                      text:
+                                          "En vous inscrivant, vous acceptez nos ",
+                                    ),
                                     TextSpan(
                                       text: "Conditions d’utilisation",
                                       style: TextStyle(
@@ -295,7 +305,30 @@ class _RegisterPageState extends State<RegisterPage> {
                                         color: appColor,
                                       ),
                                       recognizer: TapGestureRecognizer()
-                                        ..onTap = () {},
+                                        ..onTap = () {
+                                          showBarModalBottomSheet(
+                                            isDismissible: false,
+                                            enableDrag: false,
+                                            expand: true,
+                                            topControl: Align(
+                                              alignment: Alignment.centerLeft,
+                                              child: FloatingActionButton.small(
+                                                heroTag: "Condition",
+                                                backgroundColor: appColorWhite,
+                                                shape: const CircleBorder(),
+                                                onPressed: () =>
+                                                    Navigator.of(context).pop(),
+                                                child: Icon(
+                                                  Icons.close,
+                                                  color: appColorBlack,
+                                                ),
+                                              ),
+                                            ),
+                                            context: context,
+                                            builder: (context) =>
+                                                ConditionPage(),
+                                          );
+                                        },
                                     ),
                                     const TextSpan(text: " et notre "),
                                     TextSpan(
@@ -306,7 +339,29 @@ class _RegisterPageState extends State<RegisterPage> {
                                         color: appColor,
                                       ),
                                       recognizer: TapGestureRecognizer()
-                                        ..onTap = () {},
+                                        ..onTap = () {
+                                          showBarModalBottomSheet(
+                                            isDismissible: false,
+                                            enableDrag: false,
+                                            expand: true,
+                                            topControl: Align(
+                                              alignment: Alignment.centerLeft,
+                                              child: FloatingActionButton.small(
+                                                heroTag: "Politique",
+                                                backgroundColor: appColorWhite,
+                                                shape: const CircleBorder(),
+                                                onPressed: () =>
+                                                    Navigator.of(context).pop(),
+                                                child: Icon(
+                                                  Icons.close,
+                                                  color: appColorBlack,
+                                                ),
+                                              ),
+                                            ),
+                                            context: context,
+                                            builder: (context) => PolicyPage(),
+                                          );
+                                        },
                                     ),
                                     const TextSpan(text: "."),
                                   ],
@@ -343,5 +398,88 @@ class _RegisterPageState extends State<RegisterPage> {
         ),
       ),
     );
+  }
+
+  Future<void> registerUser(BuildContext context) async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: appColor,
+          surfaceTintColor: appColor,
+          shadowColor: appColor,
+          content: Row(
+            children: [
+              CircularProgressIndicator(color: appColorWhite),
+              const SizedBox(width: 20),
+              Expanded(
+                child: Text(
+                  'Création du compte...',
+                  style: TextStyle(color: appColorWhite),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+
+    try {
+      // Autoriser les certificats auto-signés (attention en production)
+      HttpClient().badCertificateCallback =
+          (X509Certificate cert, String host, int port) => true;
+
+      final response = await http.post(
+        Uri.parse(ApiUrls.postRegister),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'nom': name.text,
+          'prenom': lastName.text,
+          'phone': phoneIndicator.isEmpty ? login.text : phoneIndicator,
+          'email': email.text,
+          'password': password.text,
+          'role': widget.texte == "Cliente" ? 'user' : 'hair',
+        }),
+      );
+
+      final Map<String, dynamic> responseData = jsonDecode(
+        utf8.decode(response.bodyBytes),
+      );
+
+      if (response.statusCode == 200) {
+        Navigator.pop(context);
+
+        SnackbarHelper.showSuccess(context, responseData['message']);
+
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => const LoginPage()),
+          (route) => false,
+        );
+      } else if (response.statusCode == 401) {
+        Navigator.pop(context);
+        SnackbarHelper.showError(context, responseData['message']);
+      } else if (response.statusCode == 422) {
+        Navigator.pop(context);
+        final message = responseData['message'];
+        if (message is List && message.isNotEmpty) {
+          SnackbarHelper.showError(context, message.first);
+        } else if (message is String) {
+          SnackbarHelper.showError(context, message);
+        } else {
+          SnackbarHelper.showError(context, "Une erreur est survenue.");
+        }
+      } else {
+        Navigator.pop(context);
+        SnackbarHelper.showError(
+          context,
+          "Impossible de s'enregistrer. Veuillez réessayer!",
+        );
+      }
+    } catch (e) {
+      Navigator.pop(context);
+      SnackbarHelper.showError(context, "Erreur de connexion");
+    }
   }
 }
