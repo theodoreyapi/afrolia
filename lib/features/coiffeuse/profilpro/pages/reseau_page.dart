@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:afrolia/core/constants/constants.dart';
@@ -8,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:gap/gap.dart';
+import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'package:intl_phone_number_input/intl_phone_number_input.dart';
 import 'package:sizer/sizer.dart';
@@ -21,8 +23,6 @@ class ReseauPage extends StatefulWidget {
 
 class _ReseauPageState extends State<ReseauPage> {
   final _formKeyInfo = GlobalKey<FormState>();
-  bool _obscure = true;
-  late final bool _isChecked = true;
 
   final FocusNode _focusNode = FocusNode();
   bool _isFocused = false;
@@ -34,6 +34,10 @@ class _ReseauPageState extends State<ReseauPage> {
       setState(() {
         _isFocused = _focusNode.hasFocus;
       });
+    });
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      sociaux();
     });
   }
 
@@ -51,6 +55,48 @@ class _ReseauPageState extends State<ReseauPage> {
   String phoneIndicator = "";
   String initialCountry = 'CI';
   PhoneNumber number = PhoneNumber(isoCode: 'CI');
+
+  Future<void> sociaux() async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        return AlertDialog(
+          content: Row(
+            children: [
+              CircularProgressIndicator(),
+              const SizedBox(width: 20),
+              Expanded(child: Text('Patientez...')),
+            ],
+          ),
+        );
+      },
+    );
+    final http.Response response = await http.get(
+      Uri.parse(
+        "${ApiUrls.getFirstSociaux}${SharedPreferencesHelper().getString('identifiant')}",
+      ),
+      headers: {'Content-Type': 'application/json'},
+    );
+
+    Navigator.pop(context);
+
+    if (response.statusCode == 200) {
+      final Map<String, dynamic> jsonResponse = json.decode(
+        utf8.decode(response.bodyBytes),
+      );
+
+      setState(() {
+        insta.text = jsonResponse['instagram'];
+        face.text = jsonResponse['facebook'];
+        whats.text = jsonResponse['whatsapp'];
+        tiktok.text = jsonResponse['tiktok'];
+      });
+    } else {
+      SnackbarHelper.showError(context, "Veuillez remplir les champs.");
+      throw Exception("Une erreur s'est produite");
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -182,6 +228,7 @@ class _ReseauPageState extends State<ReseauPage> {
               keyboardType: TextInputType.text,
               controller: insta,
               colorFille: appColorFond,
+              validatorMessage: "Obligatoire",
             ),
             Gap(1.h),
             Row(
@@ -207,6 +254,7 @@ class _ReseauPageState extends State<ReseauPage> {
               keyboardType: TextInputType.text,
               controller: face,
               colorFille: appColorFond,
+              validatorMessage: "Obligatoire",
             ),
             Gap(1.h),
             Row(
@@ -227,43 +275,12 @@ class _ReseauPageState extends State<ReseauPage> {
                 ),
               ],
             ),
-            Container(
-              padding: EdgeInsets.only(left: 4.w),
-              decoration: BoxDecoration(
-                color: appColorFond,
-                borderRadius: BorderRadius.circular(3.w),
-                border: Border.all(
-                  color: _isFocused ? appColorBorder : Colors.transparent,
-                  width: 2,
-                ),
-              ),
-              child: InternationalPhoneNumberInput(
-                focusNode: _focusNode,
-                onInputChanged: (PhoneNumber number) {
-                  phoneIndicator = number.phoneNumber!;
-                },
-                onInputValidated: (bool value) {},
-                errorMessage: "Le numéro est invalide",
-                hintText: "05 85 83 1647",
-                selectorConfig: const SelectorConfig(
-                  selectorType: PhoneInputSelectorType.BOTTOM_SHEET,
-                ),
-                ignoreBlank: false,
-                autoValidateMode: AutovalidateMode.disabled,
-                selectorTextStyle: const TextStyle(color: Colors.black),
-                //countries: ['CI'],
-                initialValue: number,
-                textFieldController: whats,
-                formatInput: true,
-                keyboardType: const TextInputType.numberWithOptions(
-                  signed: true,
-                  decimal: true,
-                ),
-                inputBorder: const OutlineInputBorder(
-                  borderSide: BorderSide.none,
-                ),
-                onSaved: (PhoneNumber number) {},
-              ),
+            InputText(
+              hintText: "05 85 83 1647",
+              keyboardType: TextInputType.phone,
+              controller: whats,
+              colorFille: appColorFond,
+              validatorMessage: "Obligatoire",
             ),
             Gap(1.h),
             Row(
@@ -289,16 +306,18 @@ class _ReseauPageState extends State<ReseauPage> {
               keyboardType: TextInputType.text,
               controller: tiktok,
               colorFille: appColorFond,
+              validatorMessage: "Obligatoire",
             ),
             Gap(2.h),
             SubmitButton(
               AppConstants.btnUpdate,
               onPressed: () async {
                 if (_formKeyInfo.currentState!.validate()) {
+                  addSociaux();
                 } else {
                   SnackbarHelper.showError(
                     context,
-                    "Verifiez vos informations",
+                    "Tous les champs sont obligatoires",
                   );
                 }
               },
@@ -307,5 +326,43 @@ class _ReseauPageState extends State<ReseauPage> {
         ),
       ),
     );
+  }
+
+  Future<void> addSociaux() async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        return AlertDialog(
+          content: Row(
+            children: [
+              CircularProgressIndicator(),
+              const SizedBox(width: 20),
+              Expanded(child: Text('Mise a jour...')),
+            ],
+          ),
+        );
+      },
+    );
+    final http.Response response = await http.post(
+      Uri.parse(ApiUrls.postSaveSociaux),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'id_utilisateur': SharedPreferencesHelper().getString('identifiant'),
+        'instagram': insta.text,
+        'facebook': face.text,
+        'whatsapp': whats.text,
+        'tiktok': tiktok.text,
+      }),
+    );
+
+    Navigator.pop(context);
+
+    if (response.statusCode == 200) {
+      SnackbarHelper.showSuccess(context, "Vos informations ont été mise a jour");
+    } else {
+      SnackbarHelper.showError(context, "Veuillez remplir les champs.");
+      throw Exception("Une erreur s'est produite");
+    }
   }
 }

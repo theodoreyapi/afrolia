@@ -18,4 +18,15 @@ class LaguageModel {
     data['is_associe'] = isAssocie;
     return data;
   }
+
+  // ✅ Ajout pour comparaison correcte dans contains()
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+          other is LaguageModel &&
+              runtimeType == other.runtimeType &&
+              LaguageModel == other.idLangue;
+
+  @override
+  int get hashCode => idLangue.hashCode;
 }

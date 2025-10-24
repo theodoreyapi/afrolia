@@ -265,19 +265,11 @@ class _LoginPageState extends State<LoginPage> {
       barrierDismissible: false,
       builder: (context) {
         return AlertDialog(
-          backgroundColor: appColor,
-          surfaceTintColor: appColor,
-          shadowColor: appColor,
           content: Row(
             children: [
-              CircularProgressIndicator(color: appColorWhite),
+              CircularProgressIndicator(),
               const SizedBox(width: 20),
-              Expanded(
-                child: Text(
-                  'Authentification...',
-                  style: TextStyle(color: appColorWhite),
-                ),
-              ),
+              Expanded(child: Text('Authentification...')),
             ],
           ),
         );

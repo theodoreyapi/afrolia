@@ -18,4 +18,15 @@ class SpecialiteModel {
     data['is_associe'] = isAssocie;
     return data;
   }
+
+  // ✅ Ajout pour comparaison correcte dans contains()
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SpecialiteModel &&
+          runtimeType == other.runtimeType &&
+          idSpecialite == other.idSpecialite;
+
+  @override
+  int get hashCode => idSpecialite.hashCode;
 }
