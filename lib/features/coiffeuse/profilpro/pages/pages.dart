@@ -9,3 +9,4 @@ export 'security_page.dart';
 export 'service_page.dart';
 export 'tarif_page.dart';
 export 'create_gallery_page.dart';
+export 'edit_service_page.dart';

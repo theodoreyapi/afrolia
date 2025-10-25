@@ -6,7 +6,6 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:http/http.dart' as http;
-import 'package:image_picker/image_picker.dart';
 import 'package:intl_phone_number_input/intl_phone_number_input.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:sizer/sizer.dart';
@@ -102,55 +101,6 @@ class _RegisterPageState extends State<RegisterPage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        /*Center(
-                          child: Stack(
-                            clipBehavior: Clip.none,
-                            children: [
-                              Container(
-                                width: 32.w,
-                                height: 32.w,
-                                decoration: BoxDecoration(
-                                  color: appColor.withValues(alpha: 0.1),
-                                  borderRadius: BorderRadius.circular(20),
-                                  image: _image != null
-                                      ? DecorationImage(
-                                    image: FileImage(_image!),
-                                    fit: BoxFit.cover,
-                                  )
-                                      : null,
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black12,
-                                      blurRadius: 8,
-                                      offset: Offset(0, 4),
-                                    ),
-                                  ],
-                                ),
-                                child: _image == null
-                                    ? Icon(
-                                  Icons.person,
-                                  size: 50,
-                                  color: appColor.withValues(alpha: 0.3),
-                                )
-                                    : null,
-                              ),
-                              Positioned(
-                                bottom: -5,
-                                right: -5,
-                                child: CircleAvatar(
-                                  backgroundColor: appColor,
-                                  radius: 18,
-                                  child: IconButton(
-                                    padding: EdgeInsets.zero,
-                                    icon: Icon(Icons.image, size: 18, color: appColorWhite),
-                                    onPressed: _pickImage,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        Gap(2.5.h),*/
                         InputText(
                           hintText: "Nom",
                           keyboardType: TextInputType.text,
