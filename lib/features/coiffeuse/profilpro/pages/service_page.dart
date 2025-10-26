@@ -32,10 +32,8 @@ class ServiceForm {
 class _ServicePageState extends State<ServicePage> {
   final List<ServiceForm> servicesForms = [ServiceForm()];
 
-  List<SpecialiteModel> allSpecialites = [];
   List<SpecialiteModel> specialites = [];
   bool isLoading = false;
-  late Future<List<SpecialiteModel>> _futureSpecialites;
 
   final FocusNode _focusNode = FocusNode();
   bool _isFocused = false;
@@ -54,7 +52,7 @@ class _ServicePageState extends State<ServicePage> {
 
   Future<void> _loadSpecialites() async {
     try {
-      final data = await fetchSpecialites(); // ta fonction API
+      final data = await fetchSpecialites();
       setState(() {
         specialites = data;
         isLoading = false;

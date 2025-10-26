@@ -36,10 +36,7 @@ class _ProfilproPageState extends State<ProfilproPage> {
     if (creationString != null) {
       final dateReserve = DateTime.parse(creationString);
 
-      final formatted = DateFormat(
-        "MMMM yyyy",
-        'fr_FR',
-      ).format(dateReserve);
+      final formatted = DateFormat("MMMM yyyy", 'fr_FR').format(dateReserve);
 
       setState(() {
         formattedDate = formatted[0].toUpperCase() + formatted.substring(1);
@@ -504,84 +501,155 @@ class _ProfilproPageState extends State<ProfilproPage> {
                 onTap: () {
                   showModalBottomSheet<void>(
                     context: context,
-                    backgroundColor: appColorWhite,
+                    backgroundColor: Colors.transparent,
+                    isScrollControlled: true,
+                    shape: const RoundedRectangleBorder(
+                      borderRadius: BorderRadius.vertical(
+                        top: Radius.circular(25),
+                      ),
+                    ),
                     builder: (BuildContext context) {
-                      return SizedBox(
-                        height: 300,
-                        child: Padding(
-                          padding: EdgeInsets.all(4.w),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            mainAxisSize: MainAxisSize.min,
-                            children: <Widget>[
-                              Text(
-                                "Voulez-vous vraiment vous déconnecter ?",
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  color: appColorBlack,
-                                  fontSize: 18.sp,
-                                  fontWeight: FontWeight.bold,
-                                ),
+                      return Container(
+                        padding: EdgeInsets.all(5.w),
+                        decoration: BoxDecoration(
+                          color: appColorWhite,
+                          borderRadius: const BorderRadius.vertical(
+                            top: Radius.circular(25),
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.1),
+                              blurRadius: 10,
+                              offset: const Offset(0, -3),
+                            ),
+                          ],
+                        ),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            // Barre de glissement
+                            Container(
+                              width: 40,
+                              height: 5,
+                              decoration: BoxDecoration(
+                                color: Colors.grey[300],
+                                borderRadius: BorderRadius.circular(3),
                               ),
-                              Gap(2.h),
-                              Container(
-                                padding: EdgeInsets.all(2.w),
-                                decoration: BoxDecoration(
-                                  color: appColor.withValues(alpha: .1),
-                                  borderRadius: BorderRadius.circular(3.w),
-                                ),
-                                child: ListTile(
-                                  leading: Icon(
+                            ),
+                            Gap(3.h),
+
+                            // Icône expressive
+                            Container(
+                              decoration: BoxDecoration(
+                                color: appColor.withOpacity(0.1),
+                                shape: BoxShape.circle,
+                              ),
+                              padding: EdgeInsets.all(3.w),
+                              child: Icon(
+                                Icons.logout_rounded,
+                                color: appColor,
+                                size: 40,
+                              ),
+                            ),
+
+                            Gap(2.h),
+
+                            // Titre
+                            Text(
+                              "Se déconnecter ?",
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: appColorBlack,
+                                fontSize: 18.sp,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+
+                            Gap(1.h),
+
+                            // Texte explicatif
+                            Text(
+                              "Vous êtes sur le point de vous déconnecter.\n"
+                              "Vous n’aurez plus accès à vos informations tant que vous ne serez pas reconnecté.",
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: Colors.grey[700],
+                                fontSize: 14.sp,
+                                height: 1.5,
+                              ),
+                            ),
+
+                            Gap(3.h),
+
+                            // Bloc d'information
+                            Container(
+                              padding: EdgeInsets.all(3.w),
+                              decoration: BoxDecoration(
+                                color: appColor.withOpacity(.08),
+                                borderRadius: BorderRadius.circular(3.w),
+                              ),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Icon(
                                     Icons.info_outline,
                                     color: appColor,
-                                  ),
-                                  title: Text(
-                                    "Cette action vous empêchera d'avoir "
-                                    "accès a toutes les informations "
-                                    "sur l'application",
-                                    style: TextStyle(
-                                      color: appColor,
-                                      fontSize: 16.sp,
-                                      fontWeight: FontWeight.normal,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              Gap(2.h),
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: CancelButton(
-                                      AppConstants.btnCancel,
-                                      height: 10.w,
-                                      fontSize: 15.sp,
-                                      onPressed: () => Navigator.pop(context),
-                                    ),
+                                    size: 22,
                                   ),
                                   Gap(2.w),
                                   Expanded(
-                                    child: SubmitButton(
-                                      AppConstants.btnLogout,
-                                      height: 10.w,
-                                      fontSize: 15.sp,
-                                      couleur: Colors.red,
-                                      onPressed: () async {
-                                        await SharedPreferencesHelper().clear();
-                                        Navigator.pushAndRemoveUntil(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (context) =>
-                                                const LoginPage(),
-                                          ),
-                                          (route) => false,
-                                        );
-                                      },
+                                    child: Text(
+                                      "Vous pourrez vous reconnecter à tout moment avec vos identifiants habituels.",
+                                      style: TextStyle(
+                                        color: appColor,
+                                        fontSize: 14.sp,
+                                        height: 1.4,
+                                      ),
                                     ),
                                   ),
                                 ],
                               ),
-                            ],
-                          ),
+                            ),
+
+                            Gap(3.h),
+
+                            // Boutons d’action
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: CancelButton(
+                                    "Annuler",
+                                    height: 10.w,
+                                    fontSize: 15.sp,
+                                    onPressed: () => Navigator.pop(context),
+                                  ),
+                                ),
+                                Gap(3.w),
+                                Expanded(
+                                  child: SubmitButton(
+                                    "Se déconnecter",
+                                    height: 10.w,
+                                    fontSize: 15.sp,
+                                    couleur: appColor,
+                                    // 👈 Ton thème principal, pas rouge
+                                    onPressed: () async {
+                                      await SharedPreferencesHelper().clear();
+                                      Navigator.pushAndRemoveUntil(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) =>
+                                              const LoginPage(),
+                                        ),
+                                        (route) => false,
+                                      );
+                                    },
+                                  ),
+                                ),
+                              ],
+                            ),
+
+                            Gap(1.h),
+                          ],
                         ),
                       );
                     },
@@ -651,80 +719,157 @@ class _ProfilproPageState extends State<ProfilproPage> {
                           onPressed: () {
                             showModalBottomSheet<void>(
                               context: context,
-                              backgroundColor: appColorWhite,
+                              backgroundColor: Colors.transparent,
+                              isScrollControlled: true,
+                              shape: const RoundedRectangleBorder(
+                                borderRadius: BorderRadius.vertical(
+                                  top: Radius.circular(25),
+                                ),
+                              ),
                               builder: (BuildContext context) {
-                                return SizedBox(
-                                  height: 300,
-                                  child: Padding(
-                                    padding: EdgeInsets.all(4.w),
-                                    child: Column(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: <Widget>[
-                                        Text(
-                                          "Suppression de compte ?",
-                                          textAlign: TextAlign.center,
-                                          style: TextStyle(
-                                            color: appColorBlack,
-                                            fontSize: 18.sp,
-                                            fontWeight: FontWeight.bold,
+                                return Container(
+                                  padding: EdgeInsets.all(5.w),
+                                  decoration: BoxDecoration(
+                                    color: appColorWhite,
+                                    borderRadius: const BorderRadius.vertical(
+                                      top: Radius.circular(25),
+                                    ),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withOpacity(0.1),
+                                        blurRadius: 10,
+                                        offset: const Offset(0, -3),
+                                      ),
+                                    ],
+                                  ),
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      // Barre de glissement
+                                      Container(
+                                        width: 40,
+                                        height: 5,
+                                        decoration: BoxDecoration(
+                                          color: Colors.grey[300],
+                                          borderRadius: BorderRadius.circular(
+                                            3,
                                           ),
                                         ),
-                                        Gap(2.h),
-                                        Container(
-                                          padding: EdgeInsets.all(2.w),
-                                          decoration: BoxDecoration(
-                                            color: appColor.withValues(
-                                              alpha: .1,
-                                            ),
-                                            borderRadius: BorderRadius.circular(
-                                              3.w,
-                                            ),
+                                      ),
+                                      Gap(3.h),
+
+                                      // Icône principale
+                                      Container(
+                                        decoration: BoxDecoration(
+                                          color: Colors.red.withOpacity(0.1),
+                                          shape: BoxShape.circle,
+                                        ),
+                                        padding: EdgeInsets.all(3.w),
+                                        child: const Icon(
+                                          Icons.warning_amber_rounded,
+                                          color: Colors.red,
+                                          size: 45,
+                                        ),
+                                      ),
+
+                                      Gap(2.h),
+
+                                      // Titre clair
+                                      Text(
+                                        "Supprimer votre compte ?",
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(
+                                          color: appColorBlack,
+                                          fontSize: 19.sp,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+
+                                      Gap(1.h),
+
+                                      // Texte explicatif humain
+                                      Text(
+                                        "Cette action est définitive.\nVotre profil, vos données et toutes vos informations seront définitivement supprimés de l’application.",
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(
+                                          color: Colors.grey[700],
+                                          fontSize: 14.sp,
+                                          height: 1.5,
+                                        ),
+                                      ),
+
+                                      Gap(3.h),
+
+                                      // Bloc d'information douce
+                                      Container(
+                                        padding: EdgeInsets.all(3.w),
+                                        decoration: BoxDecoration(
+                                          color: appColor.withOpacity(.08),
+                                          borderRadius: BorderRadius.circular(
+                                            3.w,
                                           ),
-                                          child: ListTile(
-                                            leading: Icon(
+                                        ),
+                                        child: Row(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Icon(
                                               Icons.info_outline,
                                               color: appColor,
-                                            ),
-                                            title: Text(
-                                              "Cette action vous empêchera d'avoir "
-                                              "accès a toutes les informations "
-                                              "sur l'application",
-                                              style: TextStyle(
-                                                color: appColor,
-                                                fontSize: 16.sp,
-                                                fontWeight: FontWeight.normal,
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                        Gap(2.h),
-                                        Row(
-                                          children: [
-                                            Expanded(
-                                              child: CancelButton(
-                                                AppConstants.btnCancel,
-                                                height: 10.w,
-                                                fontSize: 15.sp,
-                                                onPressed: () =>
-                                                    Navigator.pop(context),
-                                              ),
+                                              size: 22,
                                             ),
                                             Gap(2.w),
                                             Expanded(
-                                              child: SubmitButton(
-                                                AppConstants.btnDelete,
-                                                height: 10.w,
-                                                fontSize: 15.sp,
-                                                couleur: Colors.red,
-                                                onPressed: () async {},
+                                              child: Text(
+                                                "Nous vous conseillons de sauvegarder vos données importantes avant de poursuivre cette suppression.",
+                                                style: TextStyle(
+                                                  color: appColor,
+                                                  fontSize: 14.sp,
+                                                  height: 1.4,
+                                                ),
                                               ),
                                             ),
                                           ],
                                         ),
-                                      ],
-                                    ),
+                                      ),
+
+                                      Gap(3.h),
+
+                                      // Boutons d'action
+                                      Row(
+                                        children: [
+                                          Expanded(
+                                            child: CancelButton(
+                                              "Annuler",
+                                              height: 10.w,
+                                              fontSize: 15.sp,
+                                              onPressed: () =>
+                                                  Navigator.pop(context),
+                                            ),
+                                          ),
+                                          Gap(3.w),
+                                          Expanded(
+                                            child: SubmitButton(
+                                              "Supprimer le compte",
+                                              height: 10.w,
+                                              fontSize: 15.sp,
+                                              couleur: Colors.red,
+                                              onPressed: () async {
+                                                /*// 🧩 Exemple : à adapter selon ton API
+                                                await deleteUserAccount();
+                                                Navigator.pushAndRemoveUntil(
+                                                  context,
+                                                  MaterialPageRoute(builder: (context) => const LoginPage()),
+                                                      (route) => false,
+                                                );*/
+                                              },
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+
+                                      Gap(1.h),
+                                    ],
                                   ),
                                 );
                               },
