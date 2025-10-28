@@ -34,8 +34,18 @@ class _MenuproPageState extends State<MenuproPage> {
           padding: EdgeInsets.all(1.w),
           child: ClipOval(
             child: SharedPreferencesHelper().getString('photo') == ""
-                ? Image.asset("assets/images/logo.png")
-                : Image.network(SharedPreferencesHelper().getString('photo')!),
+                ? Image.asset(
+                    "assets/images/logo.png",
+                    height: 10.h,
+                    width: 10.h,
+                    fit: BoxFit.cover,
+                  )
+                : Image.network(
+                    SharedPreferencesHelper().getString('photo')!,
+                    height: 10.h,
+                    width: 10.h,
+                    fit: BoxFit.cover,
+                  ),
           ),
         ),
         backgroundColor: appColorWhite,
@@ -55,13 +65,16 @@ class _MenuproPageState extends State<MenuproPage> {
             onTap: () {
               Navigator.of(context).pushAndRemoveUntil(
                 MaterialPageRoute(builder: (context) => MenuPage()),
-                    (route) => false,
+                (route) => false,
               );
             },
             child: Padding(
               padding: EdgeInsets.all(1.w),
               child: CircleAvatar(
-                child: Icon(Icons.flip_camera_android_outlined, color: appColorText),
+                child: Icon(
+                  Icons.flip_camera_android_outlined,
+                  color: appColorText,
+                ),
               ),
             ),
           ),

@@ -7,8 +7,6 @@ import 'package:afrolia/core/widgets/widgets.dart';
 import 'package:afrolia/core/utils/utils.dart';
 import 'package:afrolia/models/hair/language/asso_language_model.dart';
 import 'package:afrolia/models/hair/specialites/asso_specialite_model.dart';
-import 'package:afrolia/models/hair/specialites/asso_specialite_model.dart';
-import 'package:afrolia/models/hair/specialites/asso_specialite_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:gap/gap.dart';
@@ -76,12 +74,6 @@ class _InfoProPageState extends State<InfoProPage> {
 
     _futureSpecialites = fetchSpecialites();
     _futureLanguages = fetchLanguages();
-  }
-
-  void _refreshDataSpecialite() {
-    setState(() {
-      _futureSpecialites = fetchSpecialites();
-    });
   }
 
   @override
@@ -181,35 +173,45 @@ class _InfoProPageState extends State<InfoProPage> {
               child: Stack(
                 clipBehavior: Clip.none,
                 children: [
-                  Container(
-                    width: 32.w,
-                    height: 32.w,
-                    decoration: BoxDecoration(
-                      color: appColor.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(20),
-                      image: _image != null
-                          ? DecorationImage(
-                              image: FileImage(_image!),
-                              fit: BoxFit.cover,
-                            )
-                          : null,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black12,
-                          blurRadius: 8,
-                          offset: Offset(0, 4),
-                        ),
-                      ],
+                Container(
+                width: 32.w,
+                height: 32.w,
+                decoration: BoxDecoration(
+                  color: appColor.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(20),
+                  image: _image != null
+                      ? DecorationImage(
+                    image: FileImage(_image!), // image prise depuis la galerie
+                    fit: BoxFit.cover,
+                  )
+                      : (SharedPreferencesHelper().getString('photo') != null &&
+                      SharedPreferencesHelper().getString('photo')!.isNotEmpty)
+                      ? DecorationImage(
+                    image: NetworkImage(
+                      SharedPreferencesHelper().getString('photo')!,
+                    ), // image venant du serveur
+                    fit: BoxFit.cover,
+                  )
+                      : null,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black12,
+                      blurRadius: 8,
+                      offset: Offset(0, 4),
                     ),
-                    child: _image == null
-                        ? Icon(
-                            Icons.person,
-                            size: 50,
-                            color: appColor.withValues(alpha: 0.3),
-                          )
-                        : null,
-                  ),
-                  Positioned(
+                  ],
+                ),
+                child: (_image == null &&
+                    (SharedPreferencesHelper().getString('photo') == null ||
+                        SharedPreferencesHelper().getString('photo')!.isEmpty))
+                    ? Icon(
+                  Icons.person,
+                  size: 50,
+                  color: appColor.withValues(alpha: 0.3),
+                )
+                    : null,
+              ),
+              Positioned(
                     bottom: -5,
                     right: -5,
                     child: CircleAvatar(
@@ -396,7 +398,7 @@ class _InfoProPageState extends State<InfoProPage> {
 
       // Ajoute les champs nécessaires
       request.fields['nom'] = name.text;
-      request.fields['prenom'] = lastName.text!;
+      request.fields['prenom'] = lastName.text;
       request.fields['commune'] = commune.text;
       request.fields['adresse'] = adresse.text;
       request.fields['experience'] = annee.text;

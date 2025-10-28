@@ -8,8 +8,13 @@ class ApiUrls {
   static const baseUrlProd = "http://candidat.aptiotalent.com/api";
   static const baseUrlTest = "http://afrolia.sodalite-consulting.com/api";
 
+  // Base URL IMAGE
+  static const baseUrlProdImage = "http://candidat.aptiotalent.com";
+  static const baseUrlTestImage = "http://afrolia.sodalite-consulting.com";
+
   // Pour obtenir la bonne base URL
   static String get baseUrl => change ? baseUrlProd : baseUrlTest;
+  static String get baseUrlImage => change ? baseUrlProdImage : baseUrlTestImage;
 
   // Authentification
   static String get postLogin => "$baseUrl/login";

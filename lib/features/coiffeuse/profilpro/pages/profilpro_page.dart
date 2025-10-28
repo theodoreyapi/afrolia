@@ -77,9 +77,14 @@ class _ProfilproPageState extends State<ProfilproPage> {
                             ? Image.asset(
                                 "assets/images/logo.png",
                                 height: 10.h,
+                                width: 10.h,
+                                fit: BoxFit.cover,
                               )
                             : Image.network(
                                 SharedPreferencesHelper().getString('photo')!,
+                                height: 10.h,
+                                width: 10.h,
+                                fit: BoxFit.cover,
                               ),
                       ),
                       Gap(2.w),
@@ -518,7 +523,7 @@ class _ProfilproPageState extends State<ProfilproPage> {
                           ),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.1),
+                              color: Colors.black.withValues(alpha: 0.1),
                               blurRadius: 10,
                               offset: const Offset(0, -3),
                             ),
@@ -541,7 +546,7 @@ class _ProfilproPageState extends State<ProfilproPage> {
                             // Icône expressive
                             Container(
                               decoration: BoxDecoration(
-                                color: appColor.withOpacity(0.1),
+                                color: appColor.withValues(alpha: 0.1),
                                 shape: BoxShape.circle,
                               ),
                               padding: EdgeInsets.all(3.w),
@@ -585,7 +590,7 @@ class _ProfilproPageState extends State<ProfilproPage> {
                             Container(
                               padding: EdgeInsets.all(3.w),
                               decoration: BoxDecoration(
-                                color: appColor.withOpacity(.08),
+                                color: appColor.withValues(alpha: .08),
                                 borderRadius: BorderRadius.circular(3.w),
                               ),
                               child: Row(
@@ -736,7 +741,9 @@ class _ProfilproPageState extends State<ProfilproPage> {
                                     ),
                                     boxShadow: [
                                       BoxShadow(
-                                        color: Colors.black.withOpacity(0.1),
+                                        color: Colors.black.withValues(
+                                          alpha: 0.1,
+                                        ),
                                         blurRadius: 10,
                                         offset: const Offset(0, -3),
                                       ),
@@ -761,7 +768,9 @@ class _ProfilproPageState extends State<ProfilproPage> {
                                       // Icône principale
                                       Container(
                                         decoration: BoxDecoration(
-                                          color: Colors.red.withOpacity(0.1),
+                                          color: Colors.red.withValues(
+                                            alpha: 0.1,
+                                          ),
                                           shape: BoxShape.circle,
                                         ),
                                         padding: EdgeInsets.all(3.w),
@@ -804,7 +813,9 @@ class _ProfilproPageState extends State<ProfilproPage> {
                                       Container(
                                         padding: EdgeInsets.all(3.w),
                                         decoration: BoxDecoration(
-                                          color: appColor.withOpacity(.08),
+                                          color: appColor.withValues(
+                                            alpha: .08,
+                                          ),
                                           borderRadius: BorderRadius.circular(
                                             3.w,
                                           ),

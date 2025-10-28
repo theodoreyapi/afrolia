@@ -1,14 +1,15 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:afrolia/core/constants/constants.dart';
 import 'package:afrolia/core/themes/themes.dart';
 import 'package:afrolia/core/widgets/widgets.dart';
 import 'package:afrolia/core/utils/utils.dart';
+import 'package:afrolia/models/hair/disponibilites/disponibilite_model.dart';
+import 'package:afrolia/models/hair/disponibilites/jour_heure_model.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:gap/gap.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:intl_phone_number_input/intl_phone_number_input.dart';
+import 'package:http/http.dart' as http;
 import 'package:sizer/sizer.dart';
 
 class DisponiblePage extends StatefulWidget {
@@ -19,6 +20,80 @@ class DisponiblePage extends StatefulWidget {
 }
 
 class _DisponiblePageState extends State<DisponiblePage> {
+  List<JourHeureModel> joursHeures = [];
+  List<DisponibiliteModel> disponibilites = [];
+  Map<String, List<Heures>> selectedByDay = {};
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    loadData();
+  }
+
+  Future<void> loadData() async {
+    final jours = await fetchJoursHeures();
+    final dispo = await fetchDisponibilites();
+
+    // Initialisation des jours
+    for (var jour in jours) {
+      selectedByDay[jour.jour!] = [];
+    }
+
+    // Pré-sélectionner les heures existantes
+    for (var dispoJour in dispo) {
+      final jour = dispoJour.jour;
+      final heures = dispoJour.heures ?? [];
+
+      // Trouver les Heures correspondantes dans joursHeures pour retrouver leurs IDs
+      final jourHeure = jours.firstWhere(
+        (j) => j.jour == jour,
+        orElse: () => JourHeureModel(jour: jour, heures: []),
+      );
+
+      for (var heureLabel in heures) {
+        final heureObj = jourHeure.heures?.firstWhere(
+          (h) => h.libelle == heureLabel,
+          orElse: () => Heures(),
+        );
+
+        if (heureObj != null && heureObj.idHeure != null) {
+          selectedByDay[jour]!.add(heureObj);
+        }
+      }
+    }
+
+    setState(() {
+      joursHeures = jours;
+      disponibilites = dispo;
+      isLoading = false;
+    });
+  }
+
+  Future<List<JourHeureModel>> fetchJoursHeures() async {
+    final response = await http.get(Uri.parse(ApiUrls.getListJoursHeures));
+    if (response.statusCode == 200) {
+      final List data = jsonDecode(response.body);
+      return data.map((e) => JourHeureModel.fromJson(e)).toList();
+    } else {
+      throw Exception("Erreur de chargement des jours et heures");
+    }
+  }
+
+  Future<List<DisponibiliteModel>> fetchDisponibilites() async {
+    final response = await http.get(
+      Uri.parse(
+        "${ApiUrls.getListDisponibility}${SharedPreferencesHelper().getString('identifiant')}",
+      ),
+    );
+    if (response.statusCode == 200) {
+      final List data = jsonDecode(response.body);
+      return data.map((e) => DisponibiliteModel.fromJson(e)).toList();
+    } else {
+      throw Exception("Erreur de chargement des disponibilités");
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -49,7 +124,7 @@ class _DisponiblePageState extends State<DisponiblePage> {
                   ),
                 ],
               ),
-              Gap(4.h),
+              Gap(2.h),
               Expanded(
                 child: SingleChildScrollView(
                   child: Column(
@@ -111,45 +186,89 @@ class _DisponiblePageState extends State<DisponiblePage> {
         ),
       ),
       bottomNavigationBar: Padding(
-        padding: EdgeInsets.all(4.w),
+        padding: EdgeInsets.all(6.w),
         child: SubmitButton(
           AppConstants.btnUpdate,
-          onPressed: () async {
-            SnackbarHelper.showError(context, "Verifiez la selection");
-          },
+          onPressed: updateDisponibilite,
         ),
       ),
     );
   }
 
-  // Liste des heures
-  final List<Horaire> heures = List.generate(
-    15, // de 08:00 à 22:00
-    (index) => Horaire(
-      name: "${(8 + index).toString().padLeft(2, '0')}:00",
-      id: index + 1,
-    ),
-  );
+  List<Map<String, dynamic>> buildDisponibiliteList() {
+    List<Map<String, dynamic>> list = [];
 
-  // Liste des jours
-  final List<String> jours = [
-    "Lundi",
-    "Mardi",
-    "Mercredi",
-    "Jeudi",
-    "Vendredi",
-    "Samedi",
-    "Dimanche",
-  ];
+    for (var jourHeure in joursHeures) {
+      final jour = jourHeure.jour!;
+      final idJour = jourHeure.idJour;
+      final heures = selectedByDay[jour] ?? [];
 
-  // Map pour stocker la sélection par jour
-  late Map<String, List<Horaire>> selectedByDay = {
-    for (var jour in jours) jour: [],
-  };
+      for (var h in heures) {
+        list.add({"id_day": idJour, "id_time": h.idHeure});
+      }
+    }
+
+    return list;
+  }
+
+  Future<void> updateDisponibilite() async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        return AlertDialog(
+          content: Row(
+            children: [
+              CircularProgressIndicator(),
+              const SizedBox(width: 20),
+              Expanded(child: Text('Mise à jour en cours...')),
+            ],
+          ),
+        );
+      },
+    );
+
+    final disponibilites = buildDisponibiliteList();
+
+    final body = {
+      "id_utilisateur": SharedPreferencesHelper().getString('identifiant'),
+      "disponibilites": disponibilites,
+    };
+
+    final response = await http.post(
+      Uri.parse(ApiUrls.postSaveDisponibility),
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode(body),
+    );
+
+    Navigator.pop(context);
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      if (data['success'] == true) {
+        SnackbarHelper.showSuccess(
+          context,
+          "Disponibilités mises à jour avec succès.",
+        );
+      } else {
+        print("Erreur: ${data['message']}");
+        SnackbarHelper.showError(context, data['message']);
+      }
+    } else {
+      print("Erreur API: ${response.body}");
+    }
+  }
 
   Widget planning(BuildContext context) {
+    if (isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
     return Column(
-      children: jours.map((jour) {
+      children: joursHeures.map((jourHeure) {
+        final jour = jourHeure.jour!;
+        final heures = jourHeure.heures ?? [];
+
         return Container(
           margin: EdgeInsets.only(bottom: 2.h),
           padding: EdgeInsets.all(3.w),
@@ -160,7 +279,6 @@ class _DisponiblePageState extends State<DisponiblePage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              /// Titre du jour
               Text(
                 jour,
                 style: TextStyle(
@@ -171,7 +289,6 @@ class _DisponiblePageState extends State<DisponiblePage> {
               ),
               Gap(2.h),
 
-              /// GridView des heures
               GridView.builder(
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 4,
@@ -184,13 +301,17 @@ class _DisponiblePageState extends State<DisponiblePage> {
                 itemCount: heures.length,
                 itemBuilder: (context, index) {
                   final horaire = heures[index];
-                  final isSelected = selectedByDay[jour]!.contains(horaire);
+                  final isSelected = selectedByDay[jour]!.any(
+                    (h) => h.idHeure == horaire.idHeure,
+                  );
 
                   return GestureDetector(
                     onTap: () {
                       setState(() {
                         if (isSelected) {
-                          selectedByDay[jour]!.remove(horaire);
+                          selectedByDay[jour]!.removeWhere(
+                            (h) => h.idHeure == horaire.idHeure,
+                          );
                         } else {
                           selectedByDay[jour]!.add(horaire);
                         }
@@ -207,7 +328,7 @@ class _DisponiblePageState extends State<DisponiblePage> {
                       ),
                       child: Center(
                         child: Text(
-                          horaire.name,
+                          horaire.libelle ?? '',
                           style: TextStyle(
                             color: isSelected
                                 ? appColorWhite
@@ -227,11 +348,4 @@ class _DisponiblePageState extends State<DisponiblePage> {
       }).toList(),
     );
   }
-}
-
-class Horaire {
-  final String name;
-  final int id;
-
-  Horaire({required this.name, required this.id});
 }

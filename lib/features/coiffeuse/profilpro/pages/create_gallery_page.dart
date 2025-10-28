@@ -1,8 +1,12 @@
+import 'dart:convert';
 import 'dart:io';
 
+import 'package:afrolia/core/constants/constants.dart';
 import 'package:afrolia/core/themes/themes.dart';
+import 'package:afrolia/core/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
+import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'package:sizer/sizer.dart';
 
@@ -193,8 +197,87 @@ class _CreateGalleryPageState extends State<CreateGalleryPage> {
       ),
       bottomNavigationBar: Padding(
         padding: EdgeInsets.all(7.w),
-        child: SubmitButton(AppConstants.btnAddGal, onPressed: () async {}),
+        child: SubmitButton(AppConstants.btnAddGal, onPressed: () async {
+          addGallery(context);
+        }),
       ),
     );
   }
+
+  Future<void> addGallery(BuildContext context) async {
+    if (_images.isEmpty) {
+      SnackbarHelper.showError(context, "Veuillez ajouter au moins une image.");
+      return;
+    }
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        return AlertDialog(
+          content: Row(
+            children: const [
+              CircularProgressIndicator(),
+              SizedBox(width: 20),
+              Expanded(child: Text('Envoi en cours...')),
+            ],
+          ),
+        );
+      },
+    );
+
+    try {
+      HttpClient().badCertificateCallback =
+          (X509Certificate cert, String host, int port) => true;
+
+      final uri = Uri.parse(ApiUrls.postSaveGallery);
+      final request = http.MultipartRequest('POST', uri);
+
+      // 🧩 ID de l’utilisateur connecté (à remplacer par ton ID réel)
+      request.fields['id_utilisateur'] = SharedPreferencesHelper().getString('identifiant').toString();
+
+      // 🖼️ Ajouter chaque image dans le tableau "images[index][image]"
+      for (int i = 0; i < _images.length; i++) {
+        final imageFile = _images[i];
+        final multipartFile = await http.MultipartFile.fromPath(
+          'images[$i][image]', // correspond à "images.*.image" attendu par Laravel
+          imageFile.path,
+        );
+        request.files.add(multipartFile);
+
+        // Si tu veux ajouter une description (facultatif)
+        request.fields['images[$i][description]'] = "";
+      }
+
+      final streamedResponse = await request.send();
+      final response = await http.Response.fromStream(streamedResponse);
+
+      Navigator.pop(context);
+
+      debugPrint("Status: ${response.statusCode}");
+      debugPrint("Body: ${response.body}");
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> responseData =
+        jsonDecode(utf8.decode(response.bodyBytes));
+
+        if (responseData['success'] == true) {
+          SnackbarHelper.showSuccess(context, "Images ajoutées avec succès !");
+          setState(() {
+            _images.clear();
+          });
+        } else {
+          SnackbarHelper.showError(
+              context, responseData['message'] ?? "Erreur inconnue.");
+        }
+      } else {
+        SnackbarHelper.showError(
+            context, "Erreur ${response.statusCode} lors de l’envoi.");
+      }
+    } catch (e) {
+      Navigator.pop(context);
+      SnackbarHelper.showError(context, "Erreur de connexion : $e");
+    }
+  }
+
 }

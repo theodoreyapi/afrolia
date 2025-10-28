@@ -1,10 +1,12 @@
 class JourHeureModel {
+  int? idJour;
   String? jour;
   List<Heures>? heures;
 
-  JourHeureModel({this.jour, this.heures});
+  JourHeureModel({this.idJour, this.jour, this.heures});
 
   JourHeureModel.fromJson(Map<String, dynamic> json) {
+    idJour = json['id_jour'];
     jour = json['jour'];
     if (json['heures'] != null) {
       heures = <Heures>[];
@@ -16,6 +18,7 @@ class JourHeureModel {
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
+    data['id_jour'] = idJour;
     data['jour'] = jour;
     if (heures != null) {
       data['heures'] = heures!.map((v) => v.toJson()).toList();
