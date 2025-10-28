@@ -173,45 +173,53 @@ class _InfoProPageState extends State<InfoProPage> {
               child: Stack(
                 clipBehavior: Clip.none,
                 children: [
-                Container(
-                width: 32.w,
-                height: 32.w,
-                decoration: BoxDecoration(
-                  color: appColor.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(20),
-                  image: _image != null
-                      ? DecorationImage(
-                    image: FileImage(_image!), // image prise depuis la galerie
-                    fit: BoxFit.cover,
-                  )
-                      : (SharedPreferencesHelper().getString('photo') != null &&
-                      SharedPreferencesHelper().getString('photo')!.isNotEmpty)
-                      ? DecorationImage(
-                    image: NetworkImage(
-                      SharedPreferencesHelper().getString('photo')!,
-                    ), // image venant du serveur
-                    fit: BoxFit.cover,
-                  )
-                      : null,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black12,
-                      blurRadius: 8,
-                      offset: Offset(0, 4),
+                  Container(
+                    width: 32.w,
+                    height: 32.w,
+                    decoration: BoxDecoration(
+                      color: appColor.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(20),
+                      image: _image != null
+                          ? DecorationImage(
+                              image: FileImage(_image!),
+                              // image prise depuis la galerie
+                              fit: BoxFit.cover,
+                            )
+                          : (SharedPreferencesHelper().getString('photo') !=
+                                    null &&
+                                SharedPreferencesHelper()
+                                    .getString('photo')!
+                                    .isNotEmpty)
+                          ? DecorationImage(
+                              image: NetworkImage(
+                                SharedPreferencesHelper().getString('photo')!,
+                              ), // image venant du serveur
+                              fit: BoxFit.cover,
+                            )
+                          : null,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black12,
+                          blurRadius: 8,
+                          offset: Offset(0, 4),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-                child: (_image == null &&
-                    (SharedPreferencesHelper().getString('photo') == null ||
-                        SharedPreferencesHelper().getString('photo')!.isEmpty))
-                    ? Icon(
-                  Icons.person,
-                  size: 50,
-                  color: appColor.withValues(alpha: 0.3),
-                )
-                    : null,
-              ),
-              Positioned(
+                    child:
+                        (_image == null &&
+                            (SharedPreferencesHelper().getString('photo') ==
+                                    null ||
+                                SharedPreferencesHelper()
+                                    .getString('photo')!
+                                    .isEmpty))
+                        ? Icon(
+                            Icons.person,
+                            size: 50,
+                            color: appColor.withValues(alpha: 0.3),
+                          )
+                        : null,
+                  ),
+                  Positioned(
                     bottom: -5,
                     right: -5,
                     child: CircleAvatar(

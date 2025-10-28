@@ -72,20 +72,20 @@ class _ProfilproPageState extends State<ProfilproPage> {
                     children: [
                       ClipRRect(
                         borderRadius: BorderRadius.circular(3.w),
-                        child:
-                            SharedPreferencesHelper().getString('photo') == ""
-                            ? Image.asset(
-                                "assets/images/logo.png",
-                                height: 10.h,
-                                width: 10.h,
-                                fit: BoxFit.cover,
-                              )
-                            : Image.network(
-                                SharedPreferencesHelper().getString('photo')!,
-                                height: 10.h,
-                                width: 10.h,
-                                fit: BoxFit.cover,
-                              ),
+                        child: Image.network(
+                          SharedPreferencesHelper().getString('photo')!,
+                          height: 10.h,
+                          width: 10.h,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Image.asset(
+                              "assets/images/logo.png",
+                              height: 10.h,
+                              width: 10.h,
+                              fit: BoxFit.cover,
+                            );
+                          },
+                        ),
                       ),
                       Gap(2.w),
                       Expanded(

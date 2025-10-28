@@ -33,19 +33,20 @@ class _MenuproPageState extends State<MenuproPage> {
         leading: Padding(
           padding: EdgeInsets.all(1.w),
           child: ClipOval(
-            child: SharedPreferencesHelper().getString('photo') == ""
-                ? Image.asset(
-                    "assets/images/logo.png",
-                    height: 10.h,
-                    width: 10.h,
-                    fit: BoxFit.cover,
-                  )
-                : Image.network(
-                    SharedPreferencesHelper().getString('photo')!,
-                    height: 10.h,
-                    width: 10.h,
-                    fit: BoxFit.cover,
-                  ),
+            child: Image.network(
+              SharedPreferencesHelper().getString('photo')!,
+              height: 10.h,
+              width: 10.h,
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) {
+                return Image.asset(
+                  "assets/images/logo.png",
+                  fit: BoxFit.cover,
+                  height: 10.h,
+                  width: 10.h,
+                );
+              },
+            ),
           ),
         ),
         backgroundColor: appColorWhite,
