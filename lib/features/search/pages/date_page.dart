@@ -1,17 +1,25 @@
+import 'dart:convert';
+
 import 'package:afrolia/core/constants/constants.dart';
 import 'package:afrolia/core/themes/themes.dart';
 import 'package:afrolia/core/widgets/buttons/submit_button.dart';
 import 'package:afrolia/features/search/pages/reservation_config_page.dart';
-import 'package:afrolia/features/search/pages/reservation_page.dart';
+import 'package:afrolia/models/hair/services/service_model.dart';
+import 'package:afrolia/models/user/salons/salon_model.dart';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
+import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
 import 'package:sizer/sizer.dart';
 import 'package:easy_date_timeline/easy_date_timeline.dart';
 
-class DatePage extends StatefulWidget {
-  Service? service;
+import '../../../models/hair/disponibilites/disponibilite_model.dart';
 
-  DatePage({super.key, this.service});
+class DatePage extends StatefulWidget {
+  ServiceModel? service;
+  SalonModel? salon;
+
+  DatePage({super.key, this.service, this.salon});
 
   @override
   State<DatePage> createState() => _DatePageState();
@@ -20,6 +28,9 @@ class DatePage extends StatefulWidget {
 class _DatePageState extends State<DatePage> {
   DateTime? selectedDate;
   String? selectedTime;
+
+  bool isLoadingHours = false;
+  List<String> availableHours = [];
 
   // Horaires disponibles
   List<String> getAvailableTimes() {
@@ -36,10 +47,44 @@ class _DatePageState extends State<DatePage> {
     ];
   }
 
+  Future<void> fetchDisponibilitesParJour(DateTime date) async {
+    setState(() {
+      isLoadingHours = true;
+      availableHours = [];
+    });
+
+    final response = await http.get(
+      Uri.parse("${ApiUrls.getListDisponibility}${widget.salon!.id}"),
+    );
+
+    if (response.statusCode == 200) {
+      List data = jsonDecode(response.body);
+
+      List<DisponibiliteModel> disponibilites =
+      data.map((e) => DisponibiliteModel.fromJson(e)).toList();
+
+      /// Convertit la date sélectionnée → Nom du jour
+      final jour = DateFormat('EEEE', 'fr_FR').format(date); // ex: lundi
+
+      /// Trouver la disponibilité qui correspond au jour
+      final dispoJour = disponibilites.firstWhere(
+            (d) => d.jour!.toLowerCase() == jour.toLowerCase(),
+        orElse: () => DisponibiliteModel(heures: []),
+      );
+
+      setState(() {
+        availableHours = dispoJour.heures ?? [];
+        isLoadingHours = false;
+      });
+    } else {
+      setState(() => isLoadingHours = false);
+      throw Exception("Erreur API");
+    }
+  }
+
+
   @override
   Widget build(BuildContext context) {
-    final times = getAvailableTimes();
-
     return Scaffold(
       backgroundColor: appColorFond,
       appBar: AppBar(
@@ -95,9 +140,19 @@ class _DatePageState extends State<DatePage> {
                         children: [
                           ClipRRect(
                             borderRadius: BorderRadius.circular(3.w),
-                            child: Image.asset(
-                              "assets/images/gal2.jpg",
+                            child: Image.network(
+                              widget.salon!.photo!,
                               height: 7.h,
+                              width: 7.h,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) {
+                                return Image.asset(
+                                  "assets/images/logo.png",
+                                  fit: BoxFit.cover,
+                                  height: 7.h,
+                                  width: 7.h,
+                                );
+                              },
                             ),
                           ),
                           Gap(2.w),
@@ -106,7 +161,7 @@ class _DatePageState extends State<DatePage> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  "Amina Diallo",
+                                  widget.salon!.nomComplet!,
                                   style: TextStyle(
                                     color: appColorText,
                                     fontSize: 16.sp,
@@ -125,7 +180,7 @@ class _DatePageState extends State<DatePage> {
                                         ),
                                       ),
                                       TextSpan(
-                                        text: " Marcory, Abidjan",
+                                        text: widget.salon!.commune!,
                                         style: TextStyle(fontSize: 15.sp),
                                       ),
                                     ],
@@ -148,7 +203,7 @@ class _DatePageState extends State<DatePage> {
                   ),
                   child: ListTile(
                     title: Text(
-                      widget.service!.name,
+                      widget.service!.specialite!.libelle!,
                       style: TextStyle(
                         color: appColorText,
                         fontSize: 16.sp,
@@ -159,8 +214,8 @@ class _DatePageState extends State<DatePage> {
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: [
                         Text(
-                          "${widget.service!.duration ~/ 60}h "
-                          "${widget.service!.duration % 60}min",
+                          "${widget.service!.minute! ~/ 60}h "
+                          "${widget.service!.minute! % 60}min",
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             color: appColorTextSecond,
@@ -169,7 +224,7 @@ class _DatePageState extends State<DatePage> {
                           ),
                         ),
                         Text(
-                          " - ${widget.service!.price} FCFA",
+                          " - ${widget.service!.prix!} FCFA",
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             color: appColorTextSecond,
@@ -208,13 +263,15 @@ class _DatePageState extends State<DatePage> {
                       selectedDate = date;
                       selectedTime = null;
                     });
+
+                    fetchDisponibilitesParJour(date);
                   },
                   activeColor: appColor,
                   dayProps: EasyDayProps(
                     inactiveDayStyle: DayStyle(
                       decoration: BoxDecoration(
-                          borderRadius: BorderRadius.all(Radius.circular(3.w)),
-                          color: appColorWhite
+                        borderRadius: BorderRadius.all(Radius.circular(3.w)),
+                        color: appColorWhite,
                       ),
                       monthStrStyle: TextStyle(color: appColorText),
                       dayStrStyle: TextStyle(color: appColorText),
@@ -237,20 +294,26 @@ class _DatePageState extends State<DatePage> {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
+
                   Gap(1.h),
-                  GridView.builder(
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 3,
-                          childAspectRatio: 2.5,
-                          crossAxisSpacing: 10,
-                          mainAxisSpacing: 10,
-                        ),
+
+                  isLoadingHours
+                      ? Center(child: CircularProgressIndicator())
+                      : availableHours.isEmpty
+                      ? Text("Aucun créneau disponible pour cette date")
+                      : GridView.builder(
                     shrinkWrap: true,
                     physics: NeverScrollableScrollPhysics(),
-                    itemCount: times.length,
+                    gridDelegate:
+                    const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 3,
+                      childAspectRatio: 2.5,
+                      crossAxisSpacing: 10,
+                      mainAxisSpacing: 10,
+                    ),
+                    itemCount: availableHours.length,
                     itemBuilder: (context, index) {
-                      final time = times[index];
+                      final time = availableHours[index];
                       final isSelected = selectedTime == time;
 
                       return GestureDetector(
@@ -282,28 +345,39 @@ class _DatePageState extends State<DatePage> {
                     },
                   ),
                 ],
-                if (selectedDate != null && selectedTime != null)...[
-                  Gap(2.h),
-                  SubmitButton(
-                    AppConstants.btnContinue,
-                    onPressed: () async {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => ReservationConfigPage(
-                            service: widget.service,
-                            date: selectedDate!,
-                            time: selectedTime!,
-                          ),
-                        ),
-                      );
-                    },
-                  ),]
               ],
             ),
           ),
         ),
       ),
+      bottomNavigationBar: Padding(
+        padding: EdgeInsets.all(5.w),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (selectedDate != null && selectedTime != null) ...[
+              Gap(2.h),
+              SubmitButton(
+                AppConstants.btnContinue,
+                onPressed: () async {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ReservationConfigPage(
+                        salon: widget.salon!,
+                        service: widget.service!,
+                        date: selectedDate!,
+                        time: selectedTime!,
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ],
+          ],
+        ),
+      ),
+
     );
   }
 }

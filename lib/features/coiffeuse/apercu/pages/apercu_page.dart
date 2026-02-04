@@ -1,7 +1,14 @@
+import 'dart:convert';
+
 import 'package:afrolia/core/themes/themes.dart';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
+import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
 import 'package:sizer/sizer.dart';
+
+import '../../../../core/constants/constants.dart';
+import '../../../../core/utils/utils.dart';
 
 class ApercuPage extends StatefulWidget {
   const ApercuPage({super.key});
@@ -25,6 +32,62 @@ class _ApercuPageState extends State<ApercuPage> {
     Service(name: "Tissage", reservation: 25, price: 20000),
     Service(name: "Coiffure Enfants", reservation: 38, price: 10000),
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      statistics();
+    });
+  }
+
+  final formatter = NumberFormat('#,###');
+
+  var mois = TextEditingController();
+  var reservation = TextEditingController();
+  var client = TextEditingController();
+  var jour = TextEditingController();
+
+  Future<void> statistics() async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        return AlertDialog(
+          content: Row(
+            children: [
+              CircularProgressIndicator(),
+              const SizedBox(width: 20),
+              Expanded(child: Text('Patientez...')),
+            ],
+          ),
+        );
+      },
+    );
+    final http.Response response = await http.get(
+      Uri.parse(
+        "${ApiUrls.getListStatisticReservationHair}${SharedPreferencesHelper().getString('identifiant')}",
+      ),
+      headers: {'Content-Type': 'application/json'},
+    );
+
+    Navigator.pop(context);
+
+    if (response.statusCode == 200) {
+      final Map<String, dynamic> jsonResponse = json.decode(
+        utf8.decode(response.bodyBytes),
+      );
+
+      setState(() {
+        mois.text = formatter.format(jsonResponse['data']['revenu_mois']);
+        reservation.text = formatter.format(jsonResponse['data']['revenu_en_attente']);
+        client.text = jsonResponse['data']['total_clients_termines'].toString();
+        jour.text = formatter.format(jsonResponse['data']['revenu_jour']);
+      });
+    } else {
+      throw Exception("Une erreur s'est produite");
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -65,7 +128,7 @@ class _ApercuPageState extends State<ApercuPage> {
                             ),
                             Gap(1.h),
                             Text(
-                              "300 000 FCFA",
+                              "${mois.text} FCFA",
                               style: TextStyle(
                                 color: appColorText,
                                 fontSize: 18.sp,
@@ -110,7 +173,7 @@ class _ApercuPageState extends State<ApercuPage> {
                             ),
                             Gap(1.h),
                             Text(
-                              "300 000 FCFA",
+                              "${reservation.text} FCFA",
                               style: TextStyle(
                                 color: appColorText,
                                 fontSize: 18.sp,
@@ -160,7 +223,7 @@ class _ApercuPageState extends State<ApercuPage> {
                             ),
                             Gap(1.h),
                             Text(
-                              "127",
+                              "${client.text}",
                               style: TextStyle(
                                 color: appColorText,
                                 fontSize: 18.sp,
@@ -205,7 +268,7 @@ class _ApercuPageState extends State<ApercuPage> {
                             ),
                             Gap(1.h),
                             Text(
-                              "30 000 FCFA",
+                              "${jour.text} FCFA",
                               style: TextStyle(
                                 color: appColorText,
                                 fontSize: 18.sp,
@@ -238,29 +301,13 @@ class _ApercuPageState extends State<ApercuPage> {
                     mainAxisAlignment: MainAxisAlignment.start,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            "Prochaine réservations",
-                            style: TextStyle(
-                              color: appColorText,
-                              fontSize: 17.sp,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          InkWell(
-                            onTap: () {},
-                            child: Text(
-                              "Voir tout",
-                              style: TextStyle(
-                                color: appColorTextThree,
-                                fontSize: 16.sp,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        ],
+                      Text(
+                        "Prochaine réservations",
+                        style: TextStyle(
+                          color: appColorText,
+                          fontSize: 17.sp,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                       Gap(2.h),
                       ListView.builder(

@@ -189,28 +189,42 @@ class _GalleryPageState extends State<GalleryPage> {
                           return Stack(
                             children: [
                               // 🌟 Image avec coins arrondis et légère ombre
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(3.w),
-                                child: Image.network(
-                                  image['image'],
-                                  fit: BoxFit.cover,
-                                  width: double.infinity,
-                                  height: double.infinity,
-                                  loadingBuilder:
-                                      (context, child, loadingProgress) {
-                                        if (loadingProgress == null)
-                                          return child;
-                                        return Center(
-                                          child: CircularProgressIndicator(
-                                            color: appColor,
-                                          ),
-                                        );
-                                      },
-                                  errorBuilder: (_, __, ___) => Center(
-                                    child: Icon(
-                                      Icons.broken_image,
-                                      size: 30,
-                                      color: Colors.grey,
+                              GestureDetector(
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => ImagePreviewPage(
+                                        imageUrl: image['image'],
+                                        tag: "image_$index",
+                                      ),
+                                    ),
+                                  );
+                                },
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(3.w),
+                                  child: Image.network(
+                                    image['image'],
+                                    fit: BoxFit.cover,
+                                    width: double.infinity,
+                                    height: double.infinity,
+                                    loadingBuilder:
+                                        (context, child, loadingProgress) {
+                                          if (loadingProgress == null) {
+                                            return child;
+                                          }
+                                          return Center(
+                                            child: CircularProgressIndicator(
+                                              color: appColor,
+                                            ),
+                                          );
+                                        },
+                                    errorBuilder: (_, __, ___) => Center(
+                                      child: Icon(
+                                        Icons.broken_image,
+                                        size: 30,
+                                        color: Colors.grey,
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -267,3 +281,41 @@ class _GalleryPageState extends State<GalleryPage> {
     );
   }
 }
+
+class ImagePreviewPage extends StatelessWidget {
+  final String imageUrl;
+  final String tag;
+
+  const ImagePreviewPage({
+    super.key,
+    required this.imageUrl,
+    required this.tag,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      appBar: AppBar(
+        backgroundColor: Colors.black,
+        iconTheme: const IconThemeData(color: Colors.white),
+        elevation: 0,
+      ),
+      body: Center(
+        child: Hero(
+          tag: tag,
+          child: InteractiveViewer(
+            minScale: 1,
+            maxScale: 4,
+            panEnabled: true,
+            child: Image.network(
+              imageUrl,
+              fit: BoxFit.contain,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+

@@ -120,12 +120,6 @@ class _RendezPageState extends State<RendezPage> {
                   ],
                 ),
                 Gap(2.h),
-                SubmitButtonIcon(
-                  AppConstants.btnNew,
-                  icone: Icon(Icons.add, color: appColorWhite),
-                  onPressed: () async {},
-                ),
-                Gap(2.h),
                 ListView.builder(
                   shrinkWrap: true,
                   itemCount: 5,

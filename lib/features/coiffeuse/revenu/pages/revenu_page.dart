@@ -1,8 +1,16 @@
+import 'dart:convert';
+
 import 'package:afrolia/core/themes/themes.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
+import 'package:http/http.dart' as http;
+import 'package:intl/date_symbol_data_local.dart';
+import 'package:intl/intl.dart';
 import 'package:sizer/sizer.dart';
+
+import '../../../../core/constants/constants.dart';
+import '../../../../core/utils/utils.dart';
 
 class RevenuPage extends StatefulWidget {
   const RevenuPage({super.key});
@@ -20,6 +28,8 @@ class Service {
 }
 
 class _RevenuPageState extends State<RevenuPage> {
+  String currentMonthYear = "";
+
   final List<Service> services = [
     Service(name: "Tresses Africaines", reservation: 45, price: 150000),
     Service(name: "Locks / Dreadlocks", reservation: 32, price: 250000),
@@ -27,8 +37,110 @@ class _RevenuPageState extends State<RevenuPage> {
     Service(name: "Coiffure Enfants", reservation: 38, price: 100000),
   ];
 
-  final List<String> mois = ["Oct", "Nov", "Déc", "Jan", "Fév", "Mar"];
-  final List<double> valeurs = [180, 165, 220, 198, 175, 245];
+  List<String> mois = [];
+  List<double> valeurs = [];
+
+  @override
+  void initState() {
+    super.initState();
+
+    initializeDateFormatting('fr_FR', null).then((_) {
+      setState(() {
+        currentMonthYear = DateFormat('MMMM yyyy', 'fr_FR').format(DateTime.now());
+      });
+    });
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      statistics();
+      graphique();
+    });
+  }
+
+  final formatter = NumberFormat('#,###');
+
+  var moisencours = TextEditingController();
+  var semaine = TextEditingController();
+  var attente = TextEditingController();
+  var total = TextEditingController();
+  var jour = TextEditingController();
+  var evolution = TextEditingController();
+
+  var annee = TextEditingController();
+  var total_annuel = TextEditingController();
+  var croissance_estimee = TextEditingController();
+
+  Future<void> statistics() async {
+    final http.Response response = await http.get(
+      Uri.parse(
+        "${ApiUrls.getListGains}${SharedPreferencesHelper().getString('identifiant')}",
+      ),
+      headers: {'Content-Type': 'application/json'},
+    );
+
+    if (response.statusCode == 200) {
+      final Map<String, dynamic> jsonResponse = json.decode(
+        utf8.decode(response.bodyBytes),
+      );
+
+      setState(() {
+        semaine.text = formatter.format(jsonResponse['data']['revenu_semaine']);
+        moisencours.text = formatter.format(
+          jsonResponse['data']['revenu_mois'],
+        );
+        attente.text = formatter.format(jsonResponse['data']['revenu_attente']);
+        total.text = formatter.format(jsonResponse['data']['revenu_total']);
+        jour.text = formatter.format(jsonResponse['data']['revenu_jour']);
+        evolution.text = jsonResponse['data']['evolution_mois'].toString();
+      });
+    } else {
+      throw Exception("Une erreur s'est produite");
+    }
+  }
+
+  Future<void> graphique() async {
+    final http.Response response = await http.get(
+      Uri.parse(
+        "${ApiUrls.getEvolutionGains}${SharedPreferencesHelper().getString('identifiant')}",
+      ),
+      headers: {'Content-Type': 'application/json'},
+    );
+
+    if (response.statusCode == 200) {
+      final Map<String, dynamic> jsonResponse = json.decode(
+        utf8.decode(response.bodyBytes),
+      );
+
+      // Récupérer les données des revenus par mois
+      List<dynamic> revenusParMois = jsonResponse['data']['revenus_par_mois'];
+
+      setState(() {
+        // Extraire les noms des mois (abrégés à 3 lettres)
+        mois = revenusParMois.map((item) {
+          String moisComplet = item['mois'] as String;
+          return moisComplet.substring(0, 3); // Prend les 3 premières lettres
+        }).toList();
+
+        // Extraire les montants et les convertir en double
+        valeurs = revenusParMois.map((item) {
+          return (item['montant'] as num).toDouble();
+        }).toList();
+
+        // Les autres valeurs
+        total_annuel.text = formatter.format(
+          jsonResponse['data']['total_annuel'],
+        );
+        annee.text = jsonResponse['data']['annee'].toString();
+        croissance_estimee.text = jsonResponse['data']['croissance_estimee']
+            .toString();
+      });
+
+      // Pour debug - voir le résultat
+      print("Mois: $mois");
+      print("Valeurs: $valeurs");
+    } else {
+      throw Exception("Une erreur s'est produite");
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -58,7 +170,7 @@ class _RevenuPageState extends State<RevenuPage> {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Text(
-                        "Revenus de Septembre 2025",
+                        "Revenus de $currentMonthYear",
                         style: TextStyle(
                           color: appColorWhite,
                           fontSize: 16.sp,
@@ -67,7 +179,7 @@ class _RevenuPageState extends State<RevenuPage> {
                       ),
                       Gap(2.h),
                       Text(
-                        "245 000 FCFA",
+                        "${moisencours.text} FCFA",
                         style: TextStyle(
                           color: appColorWhite,
                           fontSize: 20.sp,
@@ -76,7 +188,7 @@ class _RevenuPageState extends State<RevenuPage> {
                       ),
                       Gap(2.h),
                       Text(
-                        "vs mois dernier +23.7%",
+                        "vs mois dernier +${evolution.text}%",
                         style: TextStyle(
                           color: appColorWhite,
                           fontSize: 15.sp,
@@ -111,7 +223,7 @@ class _RevenuPageState extends State<RevenuPage> {
                             ),
                             Gap(1.h),
                             Text(
-                              "89 000 FCFA",
+                              "${semaine.text} FCFA",
                               style: TextStyle(
                                 color: appColorText,
                                 fontSize: 18.sp,
@@ -153,7 +265,7 @@ class _RevenuPageState extends State<RevenuPage> {
                             ),
                             Gap(1.h),
                             Text(
-                              "23 000 FCFA",
+                              "${jour.text} FCFA",
                               style: TextStyle(
                                 color: appColorText,
                                 fontSize: 18.sp,
@@ -200,7 +312,7 @@ class _RevenuPageState extends State<RevenuPage> {
                             ),
                             Gap(1.h),
                             Text(
-                              "45 000 FCFA",
+                              "${attente.text} FCFA",
                               style: TextStyle(
                                 color: appColorText,
                                 fontSize: 18.sp,
@@ -242,7 +354,7 @@ class _RevenuPageState extends State<RevenuPage> {
                             ),
                             Gap(1.h),
                             Text(
-                              "1 900 000 FCFA",
+                              "${total.text} FCFA",
                               style: TextStyle(
                                 color: appColorText,
                                 fontSize: 18.sp,
@@ -277,7 +389,7 @@ class _RevenuPageState extends State<RevenuPage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        "Evolution des revenus (cette année)",
+                        "Evolution des revenus ${annee.text}",
                         style: TextStyle(
                           color: appColorText,
                           fontSize: 17.sp,
@@ -287,67 +399,123 @@ class _RevenuPageState extends State<RevenuPage> {
                       Gap(2.h),
                       SizedBox(
                         height: 300,
-                        child: LineChart(
-                          LineChartData(
-                            gridData: FlGridData(show: false),
-                            borderData: FlBorderData(show: false),
-                            titlesData: FlTitlesData(
-                              rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                              topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                              leftTitles: AxisTitles(
-                                sideTitles: SideTitles(
-                                  showTitles: true,
-                                  reservedSize: 40,
-                                  getTitlesWidget: (value, meta) {
-                                    return Text("${value.toInt()}k",
-                                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500));
-                                  },
-                                ),
-                              ),
-                              bottomTitles: AxisTitles(
-                                sideTitles: SideTitles(
-                                  showTitles: true,
-                                  reservedSize: 30,
-                                  getTitlesWidget: (value, meta) {
-                                    int index = value.toInt();
-                                    if (index >= 0 && index < mois.length) {
-                                      return Text(
-                                        mois[index],
-                                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
-                                      );
-                                    }
-                                    return Container();
-                                  },
-                                ),
-                              ),
-                            ),
-                            lineBarsData: [
-                              LineChartBarData(
-                                spots: List.generate(
-                                    valeurs.length, (i) => FlSpot(i.toDouble(), valeurs[i])),
-                                isCurved: true, // courbe arrondie
-                                gradient: LinearGradient(
-                                  colors: [Colors.orange, Colors.deepOrange],
-                                  begin: Alignment.centerLeft,
-                                  end: Alignment.centerRight,
-                                ),
-                                barWidth: 4,
-                                isStrokeCapRound: true,
-                                dotData: FlDotData(show: true), // points visibles
-                                belowBarData: BarAreaData(
-                                  show: true,
-                                  gradient: LinearGradient(
-                                    colors: [Colors.orange.withOpacity(0.3), Colors.transparent],
-                                    begin: Alignment.topCenter,
-                                    end: Alignment.bottomCenter,
+                        child: mois.isEmpty || valeurs.isEmpty
+                            ? Center(child: CircularProgressIndicator())
+                            : LineChart(
+                                LineChartData(
+                                  gridData: FlGridData(show: false),
+                                  borderData: FlBorderData(show: false),
+                                  titlesData: FlTitlesData(
+                                    rightTitles: AxisTitles(
+                                      sideTitles: SideTitles(showTitles: false),
+                                    ),
+                                    topTitles: AxisTitles(
+                                      sideTitles: SideTitles(showTitles: false),
+                                    ),
+                                    leftTitles: AxisTitles(
+                                      sideTitles: SideTitles(
+                                        showTitles: true,
+                                        reservedSize: 50,
+                                        getTitlesWidget: (value, meta) {
+                                          // Formatter les montants en fonction de leur taille
+                                          if (value >= 1000000) {
+                                            return Text(
+                                              "${(value / 1000000).toStringAsFixed(1)}M",
+                                              style: TextStyle(
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.w500,
+                                              ),
+                                            );
+                                          } else if (value >= 1000) {
+                                            return Text(
+                                              "${(value / 1000).toStringAsFixed(0)}k",
+                                              style: TextStyle(
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.w500,
+                                              ),
+                                            );
+                                          } else {
+                                            return Text(
+                                              "${value.toInt()}",
+                                              style: TextStyle(
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.w500,
+                                              ),
+                                            );
+                                          }
+                                        },
+                                      ),
+                                    ),
+                                    bottomTitles: AxisTitles(
+                                      sideTitles: SideTitles(
+                                        showTitles: true,
+                                        reservedSize: 30,
+                                        getTitlesWidget: (value, meta) {
+                                          int index = value.toInt();
+                                          if (index >= 0 &&
+                                              index < mois.length) {
+                                            return Text(
+                                              mois[index],
+                                              style: TextStyle(
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.w500,
+                                              ),
+                                            );
+                                          }
+                                          return Container();
+                                        },
+                                      ),
+                                    ),
                                   ),
+                                  lineBarsData: [
+                                    LineChartBarData(
+                                      spots: List.generate(
+                                        valeurs.length,
+                                        (i) => FlSpot(i.toDouble(), valeurs[i]),
+                                      ),
+                                      isCurved: true,
+                                      gradient: LinearGradient(
+                                        colors: [
+                                          Colors.orange,
+                                          Colors.deepOrange,
+                                        ],
+                                        begin: Alignment.centerLeft,
+                                        end: Alignment.centerRight,
+                                      ),
+                                      barWidth: 4,
+                                      isStrokeCapRound: true,
+                                      dotData: FlDotData(show: true),
+                                      belowBarData: BarAreaData(
+                                        show: true,
+                                        gradient: LinearGradient(
+                                          colors: [
+                                            Colors.orange.withValues(
+                                              alpha: 0.3,
+                                            ),
+                                            Colors.transparent,
+                                          ],
+                                          begin: Alignment.topCenter,
+                                          end: Alignment.bottomCenter,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                  // Calculer automatiquement min et max en fonction des données
+                                  minY: valeurs.isEmpty
+                                      ? 0
+                                      : valeurs.reduce(
+                                              (a, b) => a < b ? a : b,
+                                            ) *
+                                            0.8,
+                                  // 20% en dessous du min
+                                  maxY: valeurs.isEmpty
+                                      ? 100
+                                      : valeurs.reduce(
+                                              (a, b) => a > b ? a : b,
+                                            ) *
+                                            1.2, // 20% au-dessus du max
                                 ),
                               ),
-                            ],
-                            minY: 150, // valeur minimale sur Y
-                            maxY: 260, // valeur max sur Y
-                          ),
-                        ),
                       ),
                     ],
                   ),

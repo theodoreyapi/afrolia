@@ -1,9 +1,11 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:afrolia/core/constants/constants.dart';
 import 'package:afrolia/core/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
+import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'package:intl_phone_number_input/intl_phone_number_input.dart';
 import 'package:sizer/sizer.dart';
@@ -26,6 +28,14 @@ class _InfoPageState extends State<InfoPage> {
   final FocusNode _focusNode = FocusNode();
   bool _isFocused = false;
 
+  var login = TextEditingController();
+  var password = TextEditingController();
+  var confirmPassword = TextEditingController();
+  var name = TextEditingController();
+  var lastName = TextEditingController();
+  var email = TextEditingController();
+  var commune = TextEditingController();
+
   @override
   void initState() {
     super.initState();
@@ -34,14 +44,12 @@ class _InfoPageState extends State<InfoPage> {
         _isFocused = _focusNode.hasFocus;
       });
     });
-  }
 
-  var login = TextEditingController();
-  var password = TextEditingController();
-  var confirmPassword = TextEditingController();
-  var name = TextEditingController();
-  var lastName = TextEditingController();
-  var email = TextEditingController();
+    commune.text = SharedPreferencesHelper().getString('commune')!;
+    email.text = SharedPreferencesHelper().getString('email')!;
+    name.text = SharedPreferencesHelper().getString('nom')!;
+    lastName.text = SharedPreferencesHelper().getString('prenom')!;
+  }
 
   @override
   void dispose() {
@@ -117,6 +125,18 @@ class _InfoPageState extends State<InfoPage> {
                                   image: _image != null
                                       ? DecorationImage(
                                     image: FileImage(_image!),
+                                    // image prise depuis la galerie
+                                    fit: BoxFit.cover,
+                                  )
+                                      : (SharedPreferencesHelper().getString('photo') !=
+                                      null &&
+                                      SharedPreferencesHelper()
+                                          .getString('photo')!
+                                          .isNotEmpty)
+                                      ? DecorationImage(
+                                    image: NetworkImage(
+                                      SharedPreferencesHelper().getString('photo')!,
+                                    ), // image venant du serveur
                                     fit: BoxFit.cover,
                                   )
                                       : null,
@@ -128,7 +148,13 @@ class _InfoPageState extends State<InfoPage> {
                                     ),
                                   ],
                                 ),
-                                child: _image == null
+                                child:
+                                (_image == null &&
+                                    (SharedPreferencesHelper().getString('photo') ==
+                                        null ||
+                                        SharedPreferencesHelper()
+                                            .getString('photo')!
+                                            .isEmpty))
                                     ? Icon(
                                   Icons.person,
                                   size: 50,
@@ -175,46 +201,45 @@ class _InfoPageState extends State<InfoPage> {
                               "Veuillez saisir votre adresse email",
                         ),
                         Gap(1.h),
+                        InputText(
+                          hintText: "Commune*",
+                          keyboardType: TextInputType.text,
+                          controller: commune,
+                          validatorMessage: "Veuillez saisir votre commune",
+                        ),
+                        Gap(1.h),
                         Container(
+                          width: MediaQuery.of(context).size.width,
                           padding: EdgeInsets.only(left: 4.w),
                           decoration: BoxDecoration(
-                            color: appColorWhite,
+                            color: appColorFond,
                             borderRadius: BorderRadius.circular(3.w),
                             border: Border.all(
-                              color: _isFocused
-                                  ? appColorBorder
-                                  : Colors.transparent,
+                              color: _isFocused ? appColorBorder : Colors.transparent,
                               width: 2,
                             ),
                           ),
-                          child: InternationalPhoneNumberInput(
-                            focusNode: _focusNode,
-                            onInputChanged: (PhoneNumber number) {
-                              phoneIndicator = number.phoneNumber!;
-                            },
-                            onInputValidated: (bool value) {},
-                            errorMessage: "Le numéro est invalide",
-                            hintText: "Téléphone",
-                            selectorConfig: const SelectorConfig(
-                              selectorType: PhoneInputSelectorType.BOTTOM_SHEET,
-                            ),
-                            ignoreBlank: false,
-                            autoValidateMode: AutovalidateMode.disabled,
-                            selectorTextStyle: const TextStyle(
-                              color: Colors.black,
-                            ),
-                            //countries: ['CI'],
-                            initialValue: number,
-                            textFieldController: login,
-                            formatInput: true,
-                            keyboardType: const TextInputType.numberWithOptions(
-                              signed: true,
-                              decimal: true,
-                            ),
-                            inputBorder: const OutlineInputBorder(
-                              borderSide: BorderSide.none,
-                            ),
-                            onSaved: (PhoneNumber number) {},
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                "Numéro de Téléphone",
+                                style: TextStyle(
+                                  color: appColorBlack,
+                                  fontWeight: FontWeight.normal,
+                                  fontSize: 13.sp,
+                                ),
+                              ),
+                              Text(
+                                SharedPreferencesHelper().getString('phone')!,
+                                style: TextStyle(
+                                  color: appColorBlack,
+                                  fontWeight: FontWeight.w500,
+                                  fontSize: 18.sp,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                         Gap(1.h),
@@ -272,6 +297,7 @@ class _InfoPageState extends State<InfoPage> {
           AppConstants.btnInfo,
           onPressed: () async {
             if (_formKey.currentState!.validate() && _image != null) {
+              updatePictureUser(context, _image!);
             } else {
               SnackbarHelper.showError(
                 context,
@@ -283,4 +309,74 @@ class _InfoPageState extends State<InfoPage> {
       ),
     );
   }
+
+  Future<void> updatePictureUser(BuildContext context, File imageFile) async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        return AlertDialog(
+          content: Row(
+            children: const [
+              CircularProgressIndicator(),
+              SizedBox(width: 20),
+              Expanded(child: Text('Veuillez patienter...')),
+            ],
+          ),
+        );
+      },
+    );
+
+    try {
+      HttpClient().badCertificateCallback =
+          (X509Certificate cert, String host, int port) => true;
+
+      final uri = Uri.parse(
+        "${ApiUrls.postUpdateInfoBasic}${SharedPreferencesHelper().getString('identifiant')}",
+      );
+      final request = http.MultipartRequest('POST', uri);
+
+      // Ajoute les champs nécessaires
+      request.fields['nom'] = name.text;
+      request.fields['prenom'] = lastName.text;
+      request.fields['commune'] = commune.text;
+      request.fields['password'] = password.text;
+      request.fields['email'] = email.text;
+
+      // Ajoute le fichier image
+      request.files.add(
+        await http.MultipartFile.fromPath('photo', imageFile.path),
+      );
+
+      final streamedResponse = await request.send();
+      final response = await http.Response.fromStream(streamedResponse);
+
+      Navigator.pop(context);
+
+      print(response.statusCode);
+      debugPrint(response.body, wrapWidth: 1024);
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> responseData = jsonDecode(
+          utf8.decode(response.bodyBytes),
+        );
+
+        SharedPreferencesHelper().saveString('photo', responseData['photo']);
+
+        SnackbarHelper.showSuccess(
+          context,
+          "Informations mises à jour avec succès",
+        );
+      } else {
+        SnackbarHelper.showError(
+          context,
+          "Impossible de modifier vos informations. Veuillez réessayer.",
+        );
+      }
+    } catch (e) {
+      Navigator.pop(context);
+      SnackbarHelper.showError(context, "Erreur de connexion $e");
+    }
+  }
+
 }

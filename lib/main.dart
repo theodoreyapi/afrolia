@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:sizer/sizer.dart';
 
@@ -11,6 +12,9 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await SharedPreferencesHelper().init();
+
+  Stripe.publishableKey = "pk_live_51SA8qc2fmgPoYZOHW0np4yS2VHmjYv3FOzHjka5Z8AA4oyvAXD8vOb0kn7Cjoc5ZYI3zEuwpPgj1gBL5GJPICFow00kIjwA5tr";
+  await Stripe.instance.applySettings();
 
   runApp(const MyApp());
 }

@@ -4,3 +4,4 @@ export 'reservation_page.dart';
 export 'date_page.dart';
 export 'reservation_config_page.dart';
 export 'confirm_page.dart';
+export 'mobile_money_page.dart';

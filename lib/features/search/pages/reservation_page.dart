@@ -1,57 +1,61 @@
+import 'dart:convert';
+
 import 'package:afrolia/core/themes/themes.dart';
 import 'package:afrolia/features/search/search.dart';
+import 'package:afrolia/models/hair/services/service_model.dart';
+import 'package:afrolia/models/user/salons/salon_model.dart';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
+import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
 import 'package:sizer/sizer.dart';
 
+import '../../../core/constants/constants.dart';
+
 class ReservationPage extends StatefulWidget {
-  const ReservationPage({super.key});
+  SalonModel? salon;
+
+  ReservationPage({super.key, this.salon});
 
   @override
   State<ReservationPage> createState() => _ReservationPageState();
 }
 
-class Service {
-  final String name;
-  final String description;
-  final int price;
-  final int duration;
-
-  Service({
-    required this.name,
-    required this.description,
-    required this.price,
-    required this.duration,
-  });
-}
-
 class _ReservationPageState extends State<ReservationPage> {
-  final List<Service> services = [
-    Service(
-      name: "Tresses Africaines",
-      description: "Coiffure traditionnelle africaine",
-      price: 15000,
-      duration: 120,
-    ),
-    Service(
-      name: "Locks / Dreadlocks",
-      description: "Création et entretien de dreadlocks",
-      price: 25000,
-      duration: 180,
-    ),
-    Service(
-      name: "Tissage",
-      description: "Pose de tissage avec extensions",
-      price: 20000,
-      duration: 150,
-    ),
-    Service(
-      name: "Coiffure Enfants",
-      description: "Coiffure adaptée pour enfants",
-      price: 10000,
-      duration: 90,
-    ),
-  ];
+  final formatterNumber = NumberFormat('#,###', 'fr_FR');
+
+  List<ServiceModel> allServices = [];
+  bool isLoadings = false;
+  late Future<List<ServiceModel>> _futureMedicaments;
+
+  @override
+  void initState() {
+    super.initState();
+    _futureMedicaments = fetchMedicaments();
+  }
+
+  Future<List<ServiceModel>> fetchMedicaments() async {
+    final http.Response response = await http.get(
+      Uri.parse("${ApiUrls.getListServices}${widget.salon!.id}"),
+      headers: {'Content-Type': 'application/json'},
+    );
+
+    if (response.statusCode == 200) {
+      final Map<String, dynamic> jsonResponse = json.decode(
+        utf8.decode(response.bodyBytes),
+      );
+
+      final List<dynamic> contentList = jsonResponse['data'];
+
+      List<ServiceModel> medicaments = contentList
+          .map((item) => ServiceModel.fromJson(item as Map<String, dynamic>))
+          .toList();
+
+      return medicaments;
+    } else {
+      throw Exception("Une erreur s'est produite");
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -109,9 +113,19 @@ class _ReservationPageState extends State<ReservationPage> {
                       children: [
                         ClipRRect(
                           borderRadius: BorderRadius.circular(3.w),
-                          child: Image.asset(
-                            "assets/images/gal2.jpg",
+                          child: Image.network(
+                            widget.salon!.photo!,
                             height: 7.h,
+                            width: 7.h,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Image.asset(
+                                "assets/images/logo.png",
+                                fit: BoxFit.cover,
+                                height: 7.h,
+                                width: 7.h,
+                              );
+                            },
                           ),
                         ),
                         Gap(2.w),
@@ -120,7 +134,7 @@ class _ReservationPageState extends State<ReservationPage> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                "Amina Diallo",
+                                widget.salon!.nomComplet!,
                                 style: TextStyle(
                                   color: appColorText,
                                   fontSize: 16.sp,
@@ -139,7 +153,7 @@ class _ReservationPageState extends State<ReservationPage> {
                                       ),
                                     ),
                                     TextSpan(
-                                      text: " Marcory, Abidjan",
+                                      text: widget.salon!.commune!,
                                       style: TextStyle(fontSize: 15.sp),
                                     ),
                                   ],
@@ -162,91 +176,127 @@ class _ReservationPageState extends State<ReservationPage> {
                 ),
               ),
               Expanded(
-                child: ListView.builder(
-                  itemCount: services.length,
-                  itemBuilder: (context, index) {
-                    final service = services[index];
-                    return InkWell(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => DatePage(service: service),
-                          ),
-                        );
-                      },
-                      child: Container(
-                        margin: EdgeInsets.only(bottom: 2.w),
-                        padding: EdgeInsets.all(3.w),
-                        decoration: BoxDecoration(
-                          color: appColorWhite,
-                          borderRadius: BorderRadius.circular(3.w),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.1),
-                              blurRadius: 6,
-                            ),
-                          ],
+                child: FutureBuilder<List<ServiceModel>>(
+                  future: _futureMedicaments,
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return Center(child: CircularProgressIndicator());
+                    }
+
+                    if (isLoadings) {
+                      return Center(child: CircularProgressIndicator());
+                    }
+
+                    if (snapshot.hasError) {
+                      return Center(
+                        child: Text(
+                          "Impossible d'avoir la liste des services. "
+                          "Verifiez votre internet. Si le probleme "
+                          "persiste veuillez contactez AFROLIA",
+                          textAlign: TextAlign.center,
                         ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              service.name,
-                              style: TextStyle(
-                                color: appColorText,
-                                fontSize: 18.sp,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            Text(
-                              service.description,
-                              style: TextStyle(
-                                color: appColorBlack,
-                                fontSize: 15.sp,
-                                fontWeight: FontWeight.normal,
-                              ),
-                            ),
-                            Gap(1.h),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              children: [
-                                Text(
-                                  "${service.price} FCFA",
-                                  style: TextStyle(
-                                    fontSize: 18.sp,
-                                    fontWeight: FontWeight.bold,
-                                    color: appColorTextThree,
+                      );
+                    }
+
+                    if (snapshot.hasData) {
+                      allServices = snapshot.data!;
+
+                      if (allServices.isEmpty) {
+                        return Center(child: Text("Pas de service disponible"));
+                      }
+
+                      return ListView.builder(
+                        itemCount: allServices.length,
+                        itemBuilder: (context, index) {
+                          final service = allServices[index];
+                          return InkWell(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => DatePage(
+                                    service: service,
+                                    salon: widget.salon,
                                   ),
                                 ),
-                                Gap(2.w),
-                                Expanded(
-                                  child: Text.rich(
-                                    TextSpan(
-                                      children: [
-                                        WidgetSpan(
-                                          child: Icon(
-                                            Icons.access_time_outlined,
-                                            size: 16,
-                                            color: appColorBlack,
-                                          ),
-                                        ),
-                                        TextSpan(
-                                          text:
-                                              " ${service.duration ~/ 60}h "
-                                              "${service.duration % 60}min",
-                                          style: TextStyle(fontSize: 15.sp),
-                                        ),
-                                      ],
+                              );
+                            },
+                            child: Container(
+                              margin: EdgeInsets.only(bottom: 2.w),
+                              padding: EdgeInsets.all(3.w),
+                              decoration: BoxDecoration(
+                                color: appColorWhite,
+                                borderRadius: BorderRadius.circular(3.w),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withValues(alpha: 0.1),
+                                    blurRadius: 6,
+                                  ),
+                                ],
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    service.specialite!.libelle!,
+                                    style: TextStyle(
+                                      color: appColorText,
+                                      fontSize: 18.sp,
+                                      fontWeight: FontWeight.bold,
                                     ),
                                   ),
-                                ),
-                              ],
+                                  Text(
+                                    service.description!,
+                                    style: TextStyle(
+                                      color: appColorBlack,
+                                      fontSize: 15.sp,
+                                      fontWeight: FontWeight.normal,
+                                    ),
+                                  ),
+                                  Gap(1.h),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        "${formatterNumber.format(service.prix)} FCFA",
+                                        style: TextStyle(
+                                          fontSize: 18.sp,
+                                          fontWeight: FontWeight.bold,
+                                          color: appColorTextThree,
+                                        ),
+                                      ),
+                                      Gap(2.w),
+                                      Expanded(
+                                        child: Text.rich(
+                                          TextSpan(
+                                            children: [
+                                              WidgetSpan(
+                                                child: Icon(
+                                                  Icons.access_time_outlined,
+                                                  size: 16,
+                                                  color: appColorBlack,
+                                                ),
+                                              ),
+                                              TextSpan(
+                                                text:
+                                                    " ${service.minute! ~/ 60}h "
+                                                    "${service.minute! % 60}min",
+                                                style: TextStyle(fontSize: 15.sp),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
                             ),
-                          ],
-                        ),
-                      ),
-                    );
+                          );
+                        },
+                      );
+                    }
+                    return Center(child: Text("Aucune donnée disponible"));
                   },
                 ),
               ),

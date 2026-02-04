@@ -671,7 +671,7 @@ class _ProfilproPageState extends State<ProfilproPage> {
                 title: Text(
                   "Se déconnecter",
                   style: TextStyle(
-                    color: appColorText,
+                    color: Colors.red,
                     fontSize: 16.sp,
                     fontWeight: FontWeight.bold,
                   ),
