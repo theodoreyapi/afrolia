@@ -2,10 +2,10 @@ class ApiUrls {
   ApiUrls._();
 
   // Change base URL
-  static const bool change = false;
+  static const bool change = true;
 
   // Base URL
-  static const baseUrlProd = "http://candidat.aptiotalent.com/api";
+  static const baseUrlProd = "http://admin.afrolia-ci.com/api";
   static const baseUrlTest = "http://afrolia.sodalite-consulting.com/api";
 
   // Pour obtenir la bonne base URL

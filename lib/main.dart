@@ -13,9 +13,6 @@ Future<void> main() async {
 
   await SharedPreferencesHelper().init();
 
-  Stripe.publishableKey = "pk_live_51SA8qc2fmgPoYZOHW0np4yS2VHmjYv3FOzHjka5Z8AA4oyvAXD8vOb0kn7Cjoc5ZYI3zEuwpPgj1gBL5GJPICFow00kIjwA5tr";
-  await Stripe.instance.applySettings();
-
   runApp(const MyApp());
 }
 
