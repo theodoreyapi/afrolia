@@ -1,6 +1,7 @@
 import 'package:afrolia/core/constants/constants.dart';
 import 'package:afrolia/core/themes/themes.dart';
 import 'package:afrolia/features/coiffeuse/apercu/apercu.dart';
+import 'package:afrolia/features/coiffeuse/produit/pages/pages.dart';
 import 'package:afrolia/features/coiffeuse/reservation/reservation.dart';
 import 'package:afrolia/features/coiffeuse/revenu/revenu.dart';
 import 'package:flutter/material.dart';
@@ -23,6 +24,7 @@ class _MenuproPageState extends State<MenuproPage> {
 
   final Widget _home = ApercuPage();
   final Widget _invite = ReservationPage();
+  final Widget _product = ProduitPage();
   final Widget _chat = RevenuPage();
   final Widget _profile = ProfilproPage();
 
@@ -33,20 +35,34 @@ class _MenuproPageState extends State<MenuproPage> {
         leading: Padding(
           padding: EdgeInsets.all(1.w),
           child: ClipOval(
-            child: Image.network(
-              SharedPreferencesHelper().getString('photo')!,
-              height: 10.h,
-              width: 10.h,
-              fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) {
+            child: (() {
+              final photo = SharedPreferencesHelper().getString('photo');
+
+              // Si null ou vide → logo par défaut
+              if (photo == null || photo.isEmpty) {
                 return Image.asset(
                   "assets/images/logo.png",
                   fit: BoxFit.cover,
                   height: 10.h,
                   width: 10.h,
                 );
-              },
-            ),
+              }
+
+              return Image.network(
+                photo,
+                height: 10.h,
+                width: 10.h,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  return Image.asset(
+                    "assets/images/logo.png",
+                    fit: BoxFit.cover,
+                    height: 10.h,
+                    width: 10.h,
+                  );
+                },
+              );
+            })(),
           ),
         ),
         backgroundColor: appColorWhite,
@@ -102,8 +118,9 @@ class _MenuproPageState extends State<MenuproPage> {
         destinations: [
           _buildNavItem(Icons.dashboard_outlined, "Aperçu", 0),
           _buildNavItem(Icons.event_available_outlined, "Réservations", 1),
-          _buildNavItem(Icons.monetization_on_outlined, "Revenus", 2),
-          _buildNavItem(Icons.person_outline, "Profil", 3),
+          _buildNavItem(Icons.local_mall_outlined, "Boutique", 2),
+          _buildNavItem(Icons.monetization_on_outlined, "Revenus", 3),
+          _buildNavItem(Icons.person_outline, "Profil", 4),
         ],
       ),
     );
@@ -127,6 +144,8 @@ class _MenuproPageState extends State<MenuproPage> {
     } else if (currentPageIndex == 1) {
       return _invite;
     } else if (currentPageIndex == 2) {
+      return _product;
+    } else if (currentPageIndex == 3) {
       return _chat;
     } else {
       return _profile;

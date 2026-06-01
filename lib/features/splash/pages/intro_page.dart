@@ -1,3 +1,4 @@
+import 'package:afrolia/features/menu/menu.dart';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -66,6 +67,16 @@ class _IntroPageState extends State<IntroPage> {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
+                        TextButton(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (_) => MenuPage()),
+                            );
+                          },
+                          child: Text("Passer"),
+                        ),
+                        Spacer(),
                         GestureDetector(
                           onTap: () {
                             setState(() {
@@ -197,9 +208,9 @@ class _IntroPageState extends State<IntroPage> {
                 SubmitButton(
                   AppConstants.btnRegister,
                   onPressed: () async {
-                    Navigator.of(
-                      context,
-                    ).push(MaterialPageRoute(builder: (_) => ChoiseRegisterPage()));
+                    Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => ChoiseRegisterPage()),
+                    );
                   },
                 ),
                 Gap(1.h),

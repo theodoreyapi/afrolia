@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:afrolia/features/auth/auth.dart';
 import 'package:afrolia/features/search/search.dart';
 import 'package:afrolia/models/user/salons/salon_model.dart';
 import 'package:flutter/material.dart';
@@ -9,6 +10,7 @@ import 'package:gap/gap.dart';
 import 'package:http/http.dart' as http;
 import 'package:sizer/sizer.dart';
 import '../../../core/constants/constants.dart';
+import '../../../core/utils/utils.dart';
 import '../../../core/widgets/widgets.dart';
 import 'detail_search_page.dart';
 
@@ -142,7 +144,8 @@ class _SearchPageState extends State<SearchPage> {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => DetailSearchPage(salon: salon),
+                                  builder: (context) =>
+                                      DetailSearchPage(salon: salon),
                                 ),
                               );
                             },
@@ -374,11 +377,30 @@ class _SearchPageState extends State<SearchPage> {
                                           AppConstants.btnReserver,
                                           height: 4.h,
                                           onPressed: () async {
+                                            // Vérification connexion
+                                            final phone =
+                                                SharedPreferencesHelper()
+                                                    .getString('phone');
+
+                                            if (phone == null ||
+                                                phone.isEmpty) {
+                                              Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                  builder: (context) =>
+                                                      LoginPage(),
+                                                ),
+                                              );
+                                              return;
+                                            }
+
                                             Navigator.push(
                                               context,
                                               MaterialPageRoute(
                                                 builder: (context) =>
-                                                    ReservationPage(salon: salon),
+                                                    ReservationPage(
+                                                      salon: salon,
+                                                    ),
                                               ),
                                             );
                                           },
